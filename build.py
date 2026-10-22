@@ -116,6 +116,10 @@ self.addEventListener('fetch', e => {{
 """
     (DIST / 'sw.js').write_text(sw)
     (DIST / '.nojekyll').write_text('')
+    # soundtrack: fetched on demand by the game and cached by the service worker as it plays
+    (DIST / 'music').mkdir(exist_ok=True)
+    for f in sorted((ROOT / 'music').glob('*.mp3')):
+        (DIST / 'music' / f.name).write_bytes(f.read_bytes())
     print(f'built docs/ (version {version}, {len(cdn)} CDN scripts precached)')
 
 

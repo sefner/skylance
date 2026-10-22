@@ -79,6 +79,7 @@ h1{margin:0;font-family:var(--font-display);font-weight:400;font-size:clamp(2.4r
 .row p{margin:0;font-size:12px;line-height:1.4;color:var(--muted)}
 .note{margin:0;font-size:12px;line-height:1.45;color:var(--muted)}
 .chip:disabled{opacity:.45;cursor:default}
+.credits{margin-top:10px}
 .chip .sw{display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:-1px;border:1px solid rgba(244,231,207,.4)}
 .row label{display:block;font:400 15px var(--font-display);color:var(--ink);margin-bottom:6px}
 .row .opts{margin-top:6px}
@@ -160,9 +161,10 @@ button:focus-visible{outline:2px solid var(--lance);outline-offset:3px}
       <li><span class="n">4</span><span><b>Berserk</b> when the gold meter fills: every target in range, all at once.</span></li>
       <li><span class="n">5</span><span><b>Charge</b>: keep holding after you lock on. Each level adds lance damage, but enemies keep firing while you wait.</span></li>
       <li><span class="n">6</span><span><b>Colours</b>: a volley that kills three or more of one eye colour pays double.</span></li>
-      <li><span class="n">8</span><span><b>Fire</b>: hold the Fire button to breathe a cone of flame where you aim. It burns enemies and their shots, and overheats if you hold too long.</span></li>
+      <li><span class="n">8</span><span><b>Dragonfire</b>: a mutation you can earn. It adds a Fire button that pours flame where you aim, burning enemies and their shots.</span></li>
       <li><span class="n">7</span><span><b>Grow</b>: kills feed your dragon. It evolves from Hatchling to Elder, and every evolution adds locks and a heart.</span></li>
-    </ol></details>
+    </ol>
+    <p class="note credits">Music (CC0, via OpenGameArt): “A Legend Will Rise” by CodeManu, “Determined Pursuit” and “Orchestral Battle Theme” by Emma_MA, “Siberian Intro” by Vehicle, “Epic Boss Battle” by Juhani Junkala, “The Fire Dragon” by Umplix.</p></details>
     <div class="forms" id="modes" role="radiogroup" aria-label="Mode">
       <button role="radio" aria-checked="true" data-mode="story"><b>Story</b><span>3 stages, 3 lands</span></button>
       <button role="radio" aria-checked="false" data-mode="daily"><b>Daily</b><span>Today's seed</span></button>
@@ -1296,67 +1298,41 @@ const sfx = {
 };
 function buzz(p) { try { navigator.vibrate?.(p); } catch {} }
 
-// ---- soundtrack: a theme per land, a boss variant of each, and a title theme ----
-// melodies are [step (16ths in a 4-bar phrase), scale degree (8 = next octave), length in 16ths]
-const THEMES = {
-  title: { bpm: 76, root: 50, scale: [0, 2, 3, 5, 7, 9, 10], prog: [0, 3, 5, 4], lead: 'bell',
-    A: [[0, 4, 8], [8, 2, 8], [16, 1, 8], [24, 0, 8], [32, 2, 8], [40, 4, 8], [48, 5, 16]],
-    B: [[0, 7, 8], [8, 5, 8], [16, 4, 12], [28, 2, 4], [32, 4, 8], [40, 3, 8], [48, 1, 16]] },
-  dusk: { bpm: 100, root: 50, scale: [0, 2, 3, 5, 7, 9, 10], prog: [0, 6, 5, 6], lead: 'horn',
-    A: [[0, 4, 4], [4, 5, 2], [6, 4, 2], [8, 2, 6], [14, 0, 2], [16, 2, 4], [20, 4, 4], [24, 5, 6], [30, 4, 2], [32, 7, 4], [36, 6, 2], [38, 5, 2], [40, 4, 6], [46, 2, 2], [48, 4, 8], [56, 3, 4], [60, 1, 4]],
-    B: [[0, 7, 6], [6, 8, 2], [8, 9, 4], [12, 7, 4], [16, 6, 6], [22, 5, 2], [24, 4, 8], [32, 5, 4], [36, 4, 2], [38, 2, 2], [40, 4, 4], [44, 7, 4], [48, 6, 8], [56, 4, 8]] },
-  frost: { bpm: 88, root: 52, scale: [0, 2, 3, 5, 7, 8, 10], prog: [0, 5, 2, 6], lead: 'bell',
-    A: [[0, 4, 8], [8, 2, 4], [12, 1, 4], [16, 0, 12], [28, 2, 4], [32, 4, 6], [38, 5, 2], [40, 7, 8], [48, 6, 8], [56, 4, 8]],
-    B: [[0, 7, 4], [4, 6, 4], [8, 4, 8], [16, 5, 4], [20, 4, 4], [24, 2, 8], [32, 4, 4], [36, 2, 4], [40, 1, 8], [48, 0, 16]] },
-  ember: { bpm: 116, root: 48, scale: [0, 1, 4, 5, 7, 8, 10], prog: [0, 5, 6, 4], lead: 'reed',
-    A: [[0, 0, 2], [2, 0, 2], [4, 1, 2], [6, 0, 2], [8, 4, 4], [12, 3, 4], [16, 4, 2], [18, 4, 2], [20, 5, 2], [22, 4, 2], [24, 7, 8], [32, 6, 4], [36, 4, 4], [40, 5, 4], [44, 4, 4], [48, 1, 6], [54, 0, 2], [56, 0, 8]],
-    B: [[0, 7, 4], [4, 8, 4], [8, 7, 2], [10, 5, 2], [12, 4, 4], [16, 5, 4], [20, 7, 4], [24, 8, 8], [32, 7, 2], [34, 5, 2], [36, 4, 4], [40, 5, 4], [44, 1, 4], [48, 0, 16]] },
-};
+// ---- soundtrack: recorded CC0 orchestral tracks, crossfaded between lands and bosses ----
+const TRACKS = { title: 'music/title.mp3', dusk: 'music/dusk.mp3', frost: 'music/frost.mp3', ember: 'music/ember.mp3', boss: 'music/boss.mp3', fireboss: 'music/fireboss.mp3' };
 const Music = {
-  gain: null, nextT: 0, step: 0, mode: 'title', intensity: 0, theme: 'title', boss: false,
-  init() { this.gain = AC.createGain(); this.gain.gain.value = 1; this.gain.connect(musBus); this.nextT = AC.currentTime + 0.15; },
-  pitch(T, deg, oct = 0) { const n = T.scale.length, o = Math.floor(deg / n); return T.root + T.scale[((deg % n) + n) % n] + 12 * (o + oct); },
-  pad(T, chordDeg, t, dur) {
-    for (const k of [0, 2, 4]) { const f = midi(this.pitch(T, chordDeg + k, 1)); for (const det of [-8, 8]) { const g = osc('sawtooth', f, f, t, dur, 0.016, this.gain, dur * 0.35, ['lowpass', 500, 0.8, 1100], det); const s = AC.createGain(); s.gain.value = 0.9; g.connect(s); s.connect(revIn); } }
+  gain: null, mode: 'title', intensity: 0, cur: null, bufs: {}, loading: {}, retryAt: {}, failed: false,
+  init() { this.gain = AC.createGain(); this.gain.gain.value = 0.75; this.gain.connect(musBus); },
+  key() {
+    if (this.mode === 'title' || !ST) return 'title';
+    if (this.mode === 'boss') return ST.biome === 'ember' ? 'fireboss' : 'boss';
+    return ST.biome;
   },
-  bass(T, deg, t, dur, v = 0.1) { const f = midi(this.pitch(T, deg, -1)); osc('sawtooth', f, f, t, dur, v, this.gain, 0.008, ['lowpass', 700, 2, 160]); osc('sine', f / 2, f / 2, t, dur, v * 0.9, this.gain, 0.01); },
-  lead(T, deg, t, dur, oct) {
-    const f = midi(this.pitch(T, deg, oct)), send = AC.createGain(); send.gain.value = 0.45; send.connect(dlyIn); const rs = AC.createGain(); rs.gain.value = 0.5; rs.connect(revIn);
-    let g;
-    if (T.lead === 'bell') { g = osc('sine', f, f, t, dur * 1.8, 0.06, this.gain, 0.004); osc('sine', f * 3, f * 3, t, dur * 0.5, 0.012, this.gain, 0.004); }
-    else if (T.lead === 'reed') { g = osc('square', f, f, t, dur, 0.035, this.gain, 0.02, ['lowpass', 1400, 1.5, 900]); }
-    else { g = osc('sawtooth', f, f, t, dur, 0.04, this.gain, 0.05, ['lowpass', 1300, 1.2, 800]); osc('sawtooth', f, f, t, dur, 0.03, this.gain, 0.05, ['lowpass', 1300, 1.2, 800], 9); }
-    g.connect(send); g.connect(rs);
+  load(k) {
+    if (this.bufs[k] || this.loading[k] || performance.now() < (this.retryAt[k] || 0)) return;
+    this.loading[k] = fetch(TRACKS[k]).then(r => { if (!r.ok) throw 0; return r.arrayBuffer(); })
+      .then(a => new Promise((res, rej) => AC.decodeAudioData(a, res, rej)))
+      .then(b => { this.bufs[k] = b; }).catch(() => { this.failed = true; this.retryAt[k] = performance.now() + 20000; }).finally(() => { delete this.loading[k]; });
   },
-  arp(T, deg, t) { const f = midi(this.pitch(T, deg, 2)), g = osc('triangle', f, f, t, 0.16, 0.022 * this.intensity, this.gain, 0.003); const s = AC.createGain(); s.gain.value = 0.6; g.connect(s); s.connect(dlyIn); },
-  kick(t, v = 0.32) { osc('sine', 150, 42, t, 0.22, v, this.gain, 0.002); osc('triangle', 900, 200, t, 0.02, v * 0.15, this.gain, 0.001); },
-  taiko(t, v = 0.25) { osc('sine', 120, 55, t, 0.45, v, this.gain, 0.003); nz(t, 0.18, v * 0.5, 'lowpass', 350, 90, 0.6, 0.002, this.gain); },
-  hat(t, v = 0.012) { nz(t, 0.03, v, 'highpass', 8000, 7000, 0.7, 0.001, this.gain); },
+  // a source that fades in, and hands over to a fresh copy of itself just before it ends
+  start(k, fade) {
+    const b = this.bufs[k], t = AC.currentTime, src = AC.createBufferSource(), g = AC.createGain();
+    src.buffer = b; src.connect(g); g.connect(this.gain);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(1, t + fade);
+    src.start(t);
+    return { k, src, g, t0: t, dur: b.duration };
+  },
+  stop(v, fade) { if (!v) return; const t = AC.currentTime; v.g.gain.cancelScheduledValues(t); v.g.gain.setValueAtTime(Math.max(0.0001, v.g.gain.value), t); v.g.gain.exponentialRampToValueAtTime(0.0001, t + fade); v.src.stop(t + fade + 0.05); },
   tick() {
     if (!AC || !this.gain) return;
-    const on = musicOn && soundOn; this.gain.gain.value = on ? 1 : 0;
-    if (!on) { this.nextT = AC.currentTime + 0.05; return; }
-    if (this.nextT < AC.currentTime - 0.25) this.nextT = AC.currentTime + 0.05;
-    while (this.nextT < AC.currentTime + 0.2) {
-      if (this.step % 16 === 0) { this.theme = this.mode === 'title' || !ST ? 'title' : ST.biome; this.boss = this.mode === 'boss'; const T = THEMES[this.theme]; dlyIn.delayTime.setValueAtTime(60 / (T.bpm + (this.boss ? 12 : 0)) * 0.75, this.nextT); }
-      const T = THEMES[this.theme], bpm = T.bpm + (this.boss ? 12 : 0);
-      this.play(T, this.step, this.nextT, 60 / bpm / 4);
-      this.nextT += 60 / bpm / 4; this.step++;
-    }
-  },
-  play(T, s, t, sd) {
-    const st = s % 16, bar = Math.floor(s / 16) % 4, ch = T.prog[bar], phrase = Math.floor(s / 64) % 2 ? T.B : T.A, ps = s % 64, title = this.theme === 'title', boss = this.boss;
-    if (st === 0) this.pad(T, ch, t, sd * 16);
-    for (const [at, deg, len] of phrase) if (at === ps) this.lead(T, deg, t, sd * len * 0.95, title ? 1 : boss ? 2 : 1);
-    if (title) return;
-    // bass pulse on the chord root
-    if ([0, 3, 6, 8, 11, 14].includes(st) || (boss && st % 2 === 0)) this.bass(T, ch, t, sd * (st % 8 === 0 ? 2 : 1.2), boss ? 0.11 : 0.09);
-    // drums: kick and deep taiko, never a snare
-    if (st === 0 || st === 8 || (boss && st % 4 === 0)) this.kick(t);
-    if (st === 12 || (st === 4 && (boss || this.intensity > 0.5)) || (boss && st === 14)) this.taiko(t, boss ? 0.28 : 0.2);
-    if (boss && bar === 3 && st >= 12) this.taiko(t, 0.12 + (st - 12) * 0.03);
-    if ((boss || this.intensity > 0.3) && st % 2 === 1) this.hat(t);
-    if (this.intensity > 0.12) this.arp(T, ch + [0, 2, 4, 7, 4, 2, 4, 9][st % 8], t);
+    const on = musicOn && soundOn; this.gain.gain.setTargetAtTime(on ? 0.75 : 0, AC.currentTime, 0.1);
+    const k = this.key();
+    this.load(k);
+    // free decoded tracks that are no longer playing (phones have little memory)
+    for (const name in this.bufs) if (name !== k && name !== this.cur?.k) delete this.bufs[name];
+    if (!this.bufs[k]) return;
+    if (!this.cur || this.cur.k !== k) { this.stop(this.cur, 1.6); this.cur = this.start(k, this.cur ? 1.6 : 0.8); return; }
+    if (AC.currentTime > this.cur.t0 + this.cur.dur - 2.2) { const old = this.cur; this.cur = this.start(k, 2); this.stop(old, 2); }
   },
 };
 
@@ -2005,9 +1981,10 @@ function ascend() {
   later(0.95, () => offerMutations(`Ascension ${S.ascN}`));
 }
 const MUTS = [
+  { id: 'fire',    g: 'DF', name: 'Dragonfire',    d: 'Unlocks fire breath: hold the Fire button to pour flame where you aim. It overheats if held too long.' },
   { id: 'twin',    g: 'TF', name: 'Twin Fang',     d: 'Every lance kill splits off a second lance at the nearest enemy.' },
   { id: 'storm',   g: 'SH', name: 'Storm Hide',    d: 'Release a full lock and lightning strikes four more targets.' },
-  { id: 'ember',   g: 'EL', name: 'Ember Lungs',   d: 'Every few seconds your dragon spits fire at the nearest incoming shot.' },
+  { id: 'ember',   g: 'EL', name: 'Ember Lungs',   d: 'Every few seconds your dragon spits fire at the nearest incoming shot. With Dragonfire, it cools far faster.' },
   { id: 'glass',   g: 'GW', name: 'Glass Wings',   d: '+3 locks, −1 heart.' },
   { id: 'swift',   g: 'SL', name: 'Swift Lances',  d: 'Lances fly 40% faster and charge 50% faster.' },
   { id: 'hunter',  g: 'HE', name: "Hunter's Eye",  d: 'Wider lock radius, and you can lock on from 30% farther away.' },
@@ -2047,9 +2024,10 @@ function pickMutation(id) {
   if (id === 'glass') { S.lockBonus += 3; S.maxL = locksFor(S.stage); S.maxHp = Math.max(2, S.maxHp - 1); S.hp = Math.min(S.hp, S.maxHp); }
   if (id === 'iron') { S.maxHp += 2; S.hp += 2; }
   $('mutate').hidden = true; phase = 'play';
-  $('turn-l').hidden = $('turn-r').hidden = $('breath').hidden = false;
+  $('turn-l').hidden = $('turn-r').hidden = false; $('breath').hidden = !has('fire');
   popup(m.name.toUpperCase(), W / 2, H * 0.3, true, '#86f2ff'); sfx.chime(); buzz(20);
   meta.onMutation?.(id);
+  if (id === 'fire') { $('breath').hidden = false; later(0.8, () => { S.hint = { text: 'Dragonfire: hold the Fire button to breathe flame where you aim.', until: S.t + 6 }; }); }
   later(0.3, checkEvolve);
 }
 function evolve() {
@@ -2212,7 +2190,7 @@ function nearestTarget(fromWorld, maxD, exclude, filter) {
 // ---------- fire breath ----------
 const bA = new V3(), bD = new V3(), bP = new V3(), bRay = new V3();
 function updateBreath(dt) {
-  const active = phase === 'play' && S.breathing && !S.fireLock && S.fire > 0;
+  const active = phase === 'play' && has('fire') && S.breathing && !S.fireLock && S.fire > 0;
   if (active) {
     S.fire = Math.max(0, S.fire - dt * 0.3); S.fireDelay = 0.9; S.jaw = 1;
     burnCone(dt); sfx.fireStart();
@@ -2438,7 +2416,7 @@ addEventListener('keyup', e => { if (e.code === 'KeyF' && S) S.breathing = false
   for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) bb.addEventListener(ev, off);
   bb.addEventListener('contextmenu', e => e.preventDefault());
 }
-document.addEventListener('visibilitychange', () => { paused = document.hidden; lastT = performance.now(); });
+document.addEventListener('visibilitychange', () => { paused = document.hidden; lastT = performance.now(); if (AC) { if (document.hidden) AC.suspend?.(); else AC.resume?.(); } });
 
 // ======================= HUD =======================
 // a soft lens flare when the sun is on screen and not behind the terrain
@@ -2540,9 +2518,9 @@ function drawHUD(dt) {
   c.fillStyle = 'rgba(244,231,207,.15)'; c.fillRect(right - mw, top + 20, mw, 4);
   c.fillStyle = S.berserk >= 1 ? `rgba(255,179,71,${0.6 + 0.4 * Math.sin(S.t * 8)})` : '#c98a3a'; c.fillRect(right - mw, top + 20, mw * S.berserk, 4);
   c.fillStyle = '#b5a68d'; c.font = hudFont(600, 10); c.textAlign = 'right'; c.fillText(S.berserk >= 1 ? 'BERSERK READY' : 'BERSERK', right, top + 28);
-  c.fillStyle = 'rgba(244,231,207,.15)'; c.fillRect(right - mw, top + 44, mw, 4);
+  if (has('fire')) { c.fillStyle = 'rgba(244,231,207,.15)'; c.fillRect(right - mw, top + 44, mw, 4);
   c.fillStyle = S.fireLock ? '#7a4a3a' : '#ff6a3c'; c.fillRect(right - mw, top + 44, mw * S.fire, 4);
-  c.fillStyle = S.fireLock ? '#ff6a3c' : '#b5a68d'; c.fillText(S.fireLock ? 'OVERHEATED' : 'FIRE', right, top + 52);
+  c.fillStyle = S.fireLock ? '#ff6a3c' : '#b5a68d'; c.fillText(S.fireLock ? 'OVERHEATED' : 'FIRE', right, top + 52); }
   // radar
   const rx = W / 2, ry = top + 26, rr = 22;
   const quads = [0, 0, 0, 0];
@@ -2691,7 +2669,7 @@ $('start').addEventListener('click', () => {
   initAudio(); newGame(true); phase = 'play'; overlay.hidden = true; ret.shown = false;
   if (S.eggPick) later(1.8, () => offerMutations(mode === 'rush' ? 'Boss Rush' : 'Drake Egg'));
   popup(`${MODE_LABEL[mode].toUpperCase()} · ${ST.B.name.toUpperCase()}`, W / 2, H * 0.3, true, '#ffb347');
-  $('turn-l').hidden = $('turn-r').hidden = $('breath').hidden = false;
+  $('turn-l').hidden = $('turn-r').hidden = false; $('breath').hidden = !has('fire');
   Music.mode = 'stage';
   try { localStorage.setItem('skylance.form', formName); } catch {}
 });
@@ -3132,7 +3110,7 @@ function start(data) {
   try { const m = localStorage.getItem('skylance.mode'); if (m && MODE_LABEL[m]) setMode(m, false); } catch {}
   D.group.traverse(o => { if (o.isMesh) o.castShadow = true; });
   buildComposer(); setupShadows(); resize(); newGame(true); showOverlay('title');
-  if (location.hash === '#debug') window.__sky = { get S() { return S; }, get phase() { return phase; }, shotLog, turn, triggerBerserk, evolve, offerMutations, pickMutation, burnCone, applyLook, D, spawnCarrier, stampede, M, renderTab, renderer, world, rockTex, aegis, splitter, mirror, nextStage, setMode, get BOSS_D() { return BOSS_D; }, get WORM_D() { return WORM_D; }, get ST() { return ST; }, jump(d) { S.d = d; while (S.si < SCRIPT.length && SCRIPT[S.si][0] < d - 50) S.si++; } };
+  if (location.hash === '#debug') window.__sky = { get S() { return S; }, get phase() { return phase; }, shotLog, turn, triggerBerserk, evolve, offerMutations, pickMutation, burnCone, applyLook, D, Music, get AC() { return AC; }, spawnCarrier, stampede, M, renderTab, renderer, world, rockTex, aegis, splitter, mirror, nextStage, setMode, get BOSS_D() { return BOSS_D; }, get WORM_D() { return WORM_D; }, get ST() { return ST; }, jump(d) { S.d = d; while (S.si < SCRIPT.length && SCRIPT[S.si][0] < d - 50) S.si++; } };
   requestAnimationFrame(t => { lastT = t; frame(t); });
 }
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
