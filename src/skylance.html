@@ -53,6 +53,7 @@ h1{margin:0;font-family:var(--font-display);font-weight:400;font-size:clamp(2.4r
 .forms{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:6px}
 #tab-fly{display:grid;gap:12px}
 #modes{grid-template-columns:repeat(2,minmax(0,1fr))}
+#diffs{grid-template-columns:repeat(3,minmax(0,1fr))}
 .forms button.locked{opacity:.55}
 .purse{margin:0;font:600 12px var(--font-ui);letter-spacing:.08em;color:var(--ember)}
 .tabs{display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid rgba(181,166,141,.25);padding-bottom:6px}
@@ -109,7 +110,7 @@ button:focus-visible{outline:2px solid var(--lance);outline-offset:3px}
 <div id="mutate" hidden>
   <div class="mcard">
     <p class="kicker" id="mu-kicker">Evolved</p>
-    <h2 class="mtitle">Choose a mutation</h2>
+    <h2 class="mtitle" id="mu-title">Choose a mutation</h2>
     <div class="mopts" id="mu-opts"></div>
   </div>
 </div>
@@ -146,8 +147,10 @@ button:focus-visible{outline:2px solid var(--lance);outline-offset:3px}
       <li><span class="n">4</span><span><b>Berserk</b> when the gold meter fills: every target in range, all at once.</span></li>
       <li><span class="n">5</span><span><b>Charge</b>: keep holding after you lock on. Each level adds lance damage, but enemies keep firing while you wait.</span></li>
       <li><span class="n">6</span><span><b>Colours</b>: a volley that kills three or more of one eye colour pays double.</span></li>
+      <li><span class="n">9</span><span><b>Combo</b>: keep killing without a 4-second pause or taking a hit. At 12, 30 and 60 kills your score multiplier climbs to ×1.5, ×2 and ×3. Each stage also sets two bonus objectives that pay embers.</span></li>
+      <li><span class="n">10</span><span><b>Routes</b>: between stages, choose your path. High Storm is harder and pays far more.</span></li>
       <li><span class="n">8</span><span><b>Dragonfire</b>: a mutation you can earn. It adds a Fire button that pours flame where you aim, burning enemies and their shots.</span></li>
-      <li><span class="n">7</span><span><b>Grow</b>: kills feed your dragon. It evolves from Hatchling to Elder, and every evolution adds locks and a heart.</span></li>
+      <li><span class="n">7</span><span><b>Grow</b>: kills level up your dragon, and every level brings a perk. It evolves into a Drake at level 5, a Wyrm at 12 and an Elder at 20. The stronger it gets, the bigger the waves.</span></li>
     </ol>
     <p class="note credits">Music (CC0, via OpenGameArt): “A Legend Will Rise” by CodeManu, “Determined Pursuit” and “Orchestral Battle Theme” by Emma_MA, “Siberian Intro” by Vehicle, “Epic Boss Battle” by Juhani Junkala, “The Fire Dragon” by Umplix.</p></details>
     <div class="forms" id="modes" role="radiogroup" aria-label="Mode">
@@ -156,10 +159,15 @@ button:focus-visible{outline:2px solid var(--lance);outline-offset:3px}
       <button role="radio" aria-checked="false" data-mode="endless"><b>Endless</b><span>How far?</span></button>
       <button role="radio" aria-checked="false" data-mode="rush"><b>Boss Rush</b><span>Bosses only</span></button>
     </div>
+    <div class="forms" id="diffs" role="radiogroup" aria-label="Difficulty">
+      <button role="radio" aria-checked="false" data-diff="calm"><b>Calm</b><span>+2 hearts</span></button>
+      <button role="radio" aria-checked="true" data-diff="normal"><b>Normal</b><span>As intended</span></button>
+      <button role="radio" aria-checked="false" data-diff="fierce"><b>Fierce</b><span>×1.3 score</span></button>
+    </div>
     <div class="forms" id="forms" role="radiogroup" aria-label="Dragon form">
-      <button role="radio" aria-checked="true" data-form="sky"><b>Skylance</b><span>6–12 locks · 5 hearts</span></button>
-      <button role="radio" aria-checked="false" data-form="storm"><b>Stormfang</b><span>8–14 locks · 4 hearts</span></button>
-      <button role="radio" aria-checked="false" data-form="bastion"><b>Bastion</b><span>4–10 locks · 7 hearts</span></button>
+      <button role="radio" aria-checked="true" data-form="sky"><b>Skylance</b><span>6 locks, grows · 5 hearts</span></button>
+      <button role="radio" aria-checked="false" data-form="storm"><b>Stormfang</b><span>8 locks, grows · 4 hearts</span></button>
+      <button role="radio" aria-checked="false" data-form="bastion"><b>Bastion</b><span>4 locks, grows · 7 hearts</span></button>
       <button role="radio" aria-checked="false" data-form="void"><b>Voidwing</b><span>◆ 60 in the Aerie</span></button>
     </div>
     <div class="opts">
@@ -389,7 +397,8 @@ function buildStage(def) {
   const B = BIOMES[def.biome];
   ST = { ...def, B };
   NOX = R(0, 900); NOZ = R(0, 900);
-  const mids = [pick(['canyon', 'ruins']), 'climb', pick(['gorge', 'canyon', 'ruins'])];
+  const ROUTE_MIDS = { canyon: ['canyon', 'gorge', 'canyon'], storm: ['plains', 'climb', 'climb'], ruins: ['ruins', 'gorge', 'ruins'] };
+  const mids = (def.route && ROUTE_MIDS[def.route]?.slice()) || [pick(['canyon', 'ruins']), 'climb', pick(['gorge', 'canyon', 'ruins'])];
   if (rng() < 0.5) [mids[0], mids[2]] = [mids[2], mids[0]];
   const plan = [['plains', 2], [mids[0], 5 + ((rng() * 2) | 0)], ['plains', 2], [mids[1], 4], [mids[2], 4 + ((rng() * 2) | 0)], ['arena', 5]];
   const cps = [], secs = []; let i = 0, x = 0;
@@ -522,6 +531,71 @@ function buildStage(def) {
 }
 
 // wave cards; each takes a difficulty q and its own seeded random
+const DIFFS = { calm: { budget: 0.7, hearts: 2, shot: 1.15, score: 0.8, label: 'Calm' }, normal: { budget: 1, hearts: 0, shot: 1, score: 1, label: 'Normal' }, fierce: { budget: 1.35, hearts: -1, shot: 0.88, score: 1.3, label: 'Fierce' } };
+// wave cards for the pacing director: f(budget, rng) spawns a group and returns what it cost; minL = first level it may appear
+const WAVES = [
+  { w: 3,   minL: 1,  f: (b, r) => { const n = clamp(Math.round(b), 4, 14); line(n, r() < 0.5 ? 1 : -1); return n; } },
+  { w: 3,   minL: 1,  f: b => { const n = clamp(Math.round(b), 5, 15); vee(n); return n; } },
+  { w: 2,   minL: 2,  f: b => { const n = clamp(Math.round(b), 6, 16); arc(n); return n; } },
+  { w: 2,   minL: 3,  f: b => { const n = clamp(Math.round(b * 1.2), 8, 26); swarm(n); return n; } },
+  { w: 2,   minL: 2,  f: (b, r) => { const n = clamp(Math.round(b * 0.6), 4, 10); darters(n, r() < 0.5 ? 1 : -1); return n; } },
+  { w: 1.5, minL: 6,  f: (b, r) => { const n = clamp(Math.round(b * 0.7), 5, 12); overtake(n, r() < 0.5 ? 1 : -1); return n; } },
+  { w: 2,   minL: 2,  f: () => { gunner({ x: 0, y: 28, a: 170 }); return 4; } },
+  { w: 1.5, minL: 4,  f: (b, r) => { gunner({ x: r() < 0.5 ? 175 : -175, y: 20, a: 8 }); return 4; } },
+  { w: 1.2, minL: 9,  f: () => { gunner({ x: 0, y: 30, a: -170 }); return 5; } },
+  { w: 1.2, minL: 7,  f: (b, r) => { aegis(r() < 0.5 ? 1 : -1); return 5; } },
+  { w: 1.3, minL: 3,  f: (b, r) => { splitter({ bx: (r() - 0.5) * 60, by: 25, a0: 650 }); return 3; } },
+  { w: 1,   minL: 10, f: () => { mirror(); return 5; } },
+  { w: 1.6, minL: 4,  key: 'diver', f: b => { const n = clamp(Math.round(b / 4), 1, 4); for (let i = 0; i < n; i++) later(i * 0.5, () => phase === 'play' && diver()); return n * 3; } },
+  { w: 1.3, minL: 6,  key: 'phantom', f: b => { const n = clamp(Math.round(b / 3), 2, 6); for (let i = 0; i < n; i++) phantom(); return n * 2.5; } },
+  { w: 1.2, minL: 8,  key: 'bomber', f: () => { bomber(); return 6; } },
+  { w: 1.1, minL: 10, key: 'linker', f: () => { linker(); return 8; } },
+  { w: 1.0, minL: 12, key: 'sniper', f: b => { sniper(); if (b > 14) sniper(); return 7; } },
+  { w: 0.9, minL: 14, key: 'brute', f: () => { brute(); return 10; } },
+  { w: 2.4, minL: 2,  key: 'wasp', land: 'dusk', f: b => { const n = clamp(Math.round(b), 5, 14); wasps(n); return n; } },
+  { w: 1.4, minL: 5,  key: 'burrower', land: 'dusk', f: b => { groundGun('burrower'); if (b > 10) later(0.8, () => phase === 'play' && groundGun('burrower')); return 5; } },
+  { w: 2.0, minL: 3,  key: 'crystal', land: 'frost', f: b => { const n = clamp(Math.round(b / 2), 3, 8); crystals(n); return n * 2; } },
+  { w: 1.4, minL: 5,  key: 'phantom', land: 'frost', f: b => { const n = clamp(Math.round(b / 3), 2, 6); for (let i = 0; i < n; i++) phantom(); return n * 2.5; } },
+  { w: 2.4, minL: 2,  key: 'bat', land: 'ember', f: b => { const n = clamp(Math.round(b), 5, 14); bats(n); return n; } },
+  { w: 1.4, minL: 5,  key: 'salamander', land: 'ember', f: b => { groundGun('salamander'); if (b > 10) later(0.8, () => phase === 'play' && groundGun('salamander')); return 6; } },
+];
+// build -> peak -> relax cycles; size grows with level, stage and difficulty, and eases off after hits
+function director(dt) {
+  const R = S.dir;
+  if (phase !== 'play' || S.boss || S.d > BOSS_D - 260 || S.evolveT > 0) return;
+  R.timer -= dt; if (R.timer > 0) return;
+  const setPiece = S.worm || S.elite || S.t < (S.swarmUntil || 0);
+  const adapt = clamp(1 - 0.16 * S.recentHits, 0.5, 1) * (S.cleanT > 25 ? 1.15 : 1) * (S.route === 'storm' ? 1.3 : 1);
+  const base = (5 + S.lvl * 0.85 + S.stageNo * 4 + (pactOn('horde') ? 4 : 0)) * S.diffMul * adapt * (setPiece ? 0.35 : 1);
+  if (R.mode === 'relax') { R.mode = 'build'; R.n = 0; R.cycle++; R.timer = 0.5; return; }
+  if (R.mode === 'build') {
+    spawnWave(base * (0.75 + 0.18 * R.n));
+    R.n++; R.timer = Math.max(3.2, 5 - S.lvl * 0.05) * (setPiece ? 1.6 : 1);
+    if (R.n >= 3 + Math.min(2, R.cycle) && !setPiece) R.mode = 'peak';
+    return;
+  }
+  // peak: a big announced wave, then a breather
+  R.wave++; popup(`WAVE ${R.wave}`, W / 2, H * 0.25, true, '#ffb347'); sfx.tom(60, 0.25); sfx.tom(80, 0.2, 0.15);
+  spawnWave(base * 1.9); later(1.2, () => spawnWave(base * 0.7));
+  R.mode = 'relax'; R.timer = 7;
+}
+function spawnWave(budget) {
+  const r = Math.random, pool = WAVES.filter(c => S.lvl >= c.minL && (!c.land || c.land === ST.biome));
+  // plain drone formations (the first four cards) grow rarer as the dragon levels, making room for specialists
+  const wt = c => WAVES.indexOf(c) < 4 ? c.w * Math.max(0.3, 1 - S.lvl * 0.05) : c.w;
+  // a newly unlocked enemy is introduced on its own first, with a small group (teach before test)
+  S.introduced ||= new Set();
+  const fresh = pool.find(c => c.key && !S.introduced.has(c.key));
+  if (fresh) { S.introduced.add(fresh.key); fresh.f(Math.min(budget, 6), r); return; }
+  let left = budget, k = 0;
+  while (left >= 3 && k < 3) {
+    let tw = pool.reduce((a, c) => a + wt(c), 0), roll = r() * tw, ch = pool[0];
+    for (const c of pool) { roll -= wt(c); if (roll <= 0) { ch = c; break; } }
+    const share = k === 2 ? left : left * rnd(0.5, 0.8), delay = k * 0.7;
+    if (k === 0) left -= ch.f(share, r); else { const c = ch; later(delay, () => { if (phase === 'play') c.f(share, r); }); left -= share; }
+    k++;
+  }
+}
 const CARDS = [
   { w: 3,   min: 0,    f: (q, r) => line(4 + Math.round(q * 3), r() < 0.5 ? 1 : -1) },
   { w: 3,   min: 0,    f: q => vee(7 + Math.round(q * 3)) },
@@ -538,27 +612,15 @@ const CARDS = [
   { w: 1.4, min: 0.8,  f: () => { line(6, 1); line(6, -1); } },
   { w: 1.2, min: 1.0,  f: (q, r) => { swarm(10); gunner({ x: r() < 0.5 ? 175 : -175, y: 20, a: -20 }); } },
 ];
+// the script now only places set pieces; the pacing director (below) fills the sky between them
 function genScript(def, rng) {
-  const out = [], seenMirror = { v: false };
-  let d = 120, prev = -1, gate = false;
-  out.push([d, () => line(4, 1)]); d += 280;
+  const out = [[120, () => line(4, 1)]];
   let dElite = BOSS_D * 0.3, dSwarm = BOSS_D * 0.68;
   if (Math.abs(dElite - WORM_D) < 600) dElite = WORM_D - 700;
   if (Math.abs(dSwarm - WORM_D) < 500) dSwarm = WORM_D + 700;
-  while (d < BOSS_D - 300) {
-    if (dElite > 600 && d >= dElite) { out.push([dElite, () => spawnCarrier(), 'elite']); d = dElite + 280; dElite = Infinity; gate = true; continue; }
-    if (d >= dSwarm) { const qq = def.diff + 0.6; out.push([dSwarm, () => stampede(qq)]); d = dSwarm + 380; dSwarm = Infinity; continue; }
-    if (d > WORM_D - 140 && d < WORM_D + 260) { if (!out.some(e => e[2] === 'worm')) out.push([WORM_D, () => spawnWorm(), 'worm']); d = WORM_D + 260; gate = true; continue; }
-    const q = def.diff + (d / BOSS_D) * 0.9 + (pactOn('horde') ? 0.4 : 0);
-    const pool = CARDS.map((c, k) => ({ c, k })).filter(({ c, k }) => q >= c.min && d >= (c.minD || 0) && k !== prev);
-    let tw = pool.reduce((a, { c }) => a + c.w, 0), roll = rng() * tw, ch = pool[0];
-    for (const p of pool) { roll -= p.c.w; if (roll <= 0) { ch = p; break; } }
-    prev = ch.k;
-    const sub = mulberry((rng() * 1e9) | 0);
-    out.push([d, () => ch.c.f(q, sub), gate ? 'gate' : undefined]); gate = false;
-    d += 240 + rng() * 80 - Math.min(60, q * 25);
-  }
-  if (!out.some(e => e[2] === 'worm')) out.push([WORM_D, () => spawnWorm(), 'worm']);
+  if (dElite > 600) out.push([dElite, () => spawnCarrier(), 'elite']);
+  out.push([dSwarm, () => stampede(def.diff + 0.6)]);
+  out.push([WORM_D, () => spawnWorm(), 'worm']);
   out.push([BOSS_D, () => spawnBoss()]);
   out.sort((a, b) => a[0] - b[0]);
   return out;
@@ -738,7 +800,9 @@ const STAGES = [
   { name: 'Wyrm',      scale: 0.93, bulk: 1.1,  span: 1.15, spikes: 1.1,  horns: 2, frill: 1.0,  blade: 1.0,  legs: 1.0,  glow: 1.15, aura: 6,  head: 1.05 },
   { name: 'Elder',     scale: 1.18, bulk: 1.22, span: 1.3,  spikes: 1.5,  horns: 3, frill: 1.45, blade: 1.35, legs: 1.1,  glow: 1.6,  aura: 18, head: 1.0 },
 ];
-const XP_AT = [0, 22, 60, 110];
+// dragon levels: growth stages begin at these levels; every level-up grants a small perk
+const LVL_EVOLVE = [1, 5, 12, 20];
+const xpNeed = n => 9 + n * 2;
 const D = (() => {
   const N = 28, M = 16, MR = M + 1;
   const group = new THREE.Group(); viewNode.add(group); group.position.set(0, -1.7, -1);
@@ -1229,7 +1293,7 @@ const sfx = {
   release(lv = 0) { if (!this.ok()) return; const t = now(); osc('sine', 150, 48, t, 0.28, 0.24 + lv * 0.04); nz(t, 0.4, 0.1, 'bandpass', 500, 1600, 1.1, 0.03); },
   launch(i = 0) { if (!this.ok()) return; nz(now(), 0.24, 0.05, 'bandpass', 380 + i * 25, 1500, 1.6, 0.04); },
   // hits: drum impacts; the volley climbs as a rising tom roll
-  hit(n, kill) { this.tom(90 * Math.pow(2, Math.min(n - 1, 14) / 14), kill ? 0.2 : 0.12); },
+  hit(n, kill) { if (!this.ok()) return; const g = 60 / 128 / 4, t = now(), q = Math.ceil((t + 0.005) / g) * g; this.tom(90 * Math.pow(2, Math.min(n - 1, 14) / 14), kill ? 0.2 : 0.12, q - t); },
   boom(size = 1) {
     if (!this.ok()) return; const t = now(), s = clamp(size, 0.3, 3.2);
     osc('sine', 90 / Math.sqrt(s), 26, t, 0.3 + s * 0.28, 0.2 + s * 0.09);
@@ -1386,15 +1450,17 @@ function newGame(build = true) {
   S = { t: 0, d: 60, speed: 70, score: 0, hp: f.hp, maxHp: f.hp, maxL: f.locks - 2, stage: 0, xp: 0, evolveT: 0, flash: 0, jaw: 0, enemies: [], lances: [], popups: [], locks: [], timers: [],
         si: 0, worm: null, boss: null, bestChain: 0, shake: 0, hurt: 0, endT: 0, berserk: 0, roar: 0, hint: null, taught: false,
         fpsT: 0, fpsN: 0, fpsChecked: false, dl: new V3(), dead: false, deadV: 0,
-        mode, stageNo: 0, fire: 1, fireLock: false, breathing: false, fireDelay: 0, fireV: { n: 1, kills: 0, pending: 0, berserk: false, hues: new Set(), hueKills: 0, huePts: 0, twins: 0 }, rings: [], charge: 0, hits: 0, spawnN: 0, killN: 0, lastHit: null, muts: new Set(), lockBonus: 0, emberT: 5, vampN: 0, ascN: 0, bestMono: 0 };
+        mode, stageNo: 0, lvl: 1, power: 0, lanceSpd: 1, reach: 0, rage: 1, cool: 1, recentHits: 0, cleanT: 0, dir: { mode: 'build', timer: 3, n: 0, wave: 0, cycle: 0 }, fire: 1, fireLock: false, breathing: false, fireDelay: 0, fireV: { n: 1, kills: 0, pending: 0, berserk: false, hues: new Set(), hueKills: 0, huePts: 0, twins: 0 }, rings: [], charge: 0, hits: 0, spawnN: 0, killN: 0, lastHit: null, muts: new Set(), lockBonus: 0, emberT: 5, vampN: 0, ascN: 0, bestMono: 0 };
   D.setMuts(S.muts);
   viewIndex = 0; viewYaw = viewYawT = 0; D.setStage(0);
   S.heatMul = pactMul(); S.stageHits = 0;
+  const DF = DIFFS[M.diff || 'normal']; S.diffMul = DF.budget; S.heatMul *= DF.score; S.maxHp = Math.max(2, S.maxHp + DF.hearts); S.hp = S.maxHp;
   if (pactOn('thin')) S.hp = S.maxHp = Math.min(3, S.maxHp);
-  if (owns('boon:egg')) { S.stage = 1; S.xp = XP_AT[1]; D.setStage(1); S.maxL = locksFor(1); S.maxHp++; S.hp++; S.eggPick = true; }
+  if (owns('boon:egg')) { S.stage = 1; S.lvl = LVL_EVOLVE[1]; D.setStage(1); S.maxL = locksFor(1); S.maxHp++; S.hp++; S.eggPick = true; }
   if (owns('boon:heart')) S.berserk = 0.5;
-  if (mode === 'rush') { S.stage = 2; S.xp = XP_AT[2]; D.setStage(2); S.maxL = locksFor(2); S.maxHp += 2; S.hp = S.maxHp; S.eggPick = true; rushToBoss(); }
+  if (mode === 'rush') { S.stage = 2; S.lvl = LVL_EVOLVE[2]; D.setStage(2); S.maxL = locksFor(2); S.maxHp += 2; S.hp = S.maxHp; S.eggPick = true; rushToBoss(); }
   D.group.position.set(0, -1.7, -1); D.group.rotation.set(0, 0, 0);
+  S.combo = 0; S.comboT = 0; S.objs = makeObjectives();
 }
 function later(delay, fn) { S.timers.push({ at: S.t + delay, fn }); }
 
@@ -1460,6 +1526,7 @@ function addEnemy(kind, mesh, o, parent = rig) {
   if (!NO_RANK.has(kind)) S.spawnN++;
   if (kind !== 'bullet') mesh.traverse(o => { if (o.isMesh) o.castShadow = true; });
   meta.onSpawn?.(kind);
+  if (phase === 'play') introduce(kind);
   S.enemies.push(e); return e;
 }
 function setFlash(e, on) {
@@ -1588,6 +1655,7 @@ function mirror(o = {}) {
 const shotLog = [];
 function shoot(fromLocal, T = 2.8, src = '?', off = null, size = 2.1) {
   if (pactOn('fangs')) T /= 1.3;
+  T *= DIFFS[M.diff || 'normal'].shot;
   if (blocked(rig.localToWorld(losA.copy(fromLocal)), D.group.getWorldPosition(losB), 0)) return false;
   if (window.__sky) { const dx = fromLocal.x - S.dl.x, dz = fromLocal.z - S.dl.z, hd = Math.hypot(dx, dz); shotLog.push({ src, d: Math.round(S.d), quad: quadOf(fromLocal), elev: +(Math.atan2(fromLocal.y - S.dl.y, hd) * 57.3).toFixed(0), dist: Math.round(hd), seeCam: !blocked(camera.getWorldPosition(new V3()), rig.localToWorld(fromLocal.clone())) }); }
   const meteor = size > 3;
@@ -1612,6 +1680,221 @@ function shoot(fromLocal, T = 2.8, src = '?', off = null, size = 2.1) {
     }
   } });
   return true;
+}
+
+// ---------- the wider bestiary: specialists, land natives and elites ----------
+Mt.red = new THREE.MeshBasicMaterial({ color: new THREE.Color(2.6, 0.35, 0.3) });
+Mt.green = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.5, 2.4, 1.0) });
+Mt.gold = new THREE.MeshBasicMaterial({ color: new THREE.Color(2.4, 1.8, 0.5), transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false });
+Mt.wasp = addRim(new THREE.MeshStandardMaterial({ color: 0xd8a020, roughness: 0.5, flatShading: true }));
+Mt.waspBand = new THREE.MeshStandardMaterial({ color: 0x1a1410, roughness: 0.6, flatShading: true });
+Mt.sand = addRim(new THREE.MeshStandardMaterial({ color: 0xb08a5a, roughness: 0.9, flatShading: true }));
+Mt.ice = addRim(new THREE.MeshStandardMaterial({ color: 0xa8d8f0, emissive: 0x204060, roughness: 0.2, metalness: 0.2, flatShading: true, transparent: true, opacity: 0.9 }));
+Mt.bat = addRim(new THREE.MeshStandardMaterial({ color: 0x3a1210, emissive: 0x401004, roughness: 0.7, flatShading: true, side: THREE.DoubleSide }));
+Mt.sala = addRim(new THREE.MeshStandardMaterial({ color: 0x2a1410, emissive: 0x5a1a04, roughness: 0.8, flatShading: true }));
+G.tether = new THREE.TorusGeometry(1.4, 0.12, 6, 20);
+Object.assign(ET, {
+  diver:   { hp: 1, r: 5,   pts: 250, threat: true },
+  phantom: { hp: 1, r: 5,   pts: 350 },
+  bomber:  { hp: 2, r: 7,   pts: 450, threat: true },
+  linker:  { hp: 2, r: 6,   pts: 600, threat: true },
+  sniper:  { hp: 2, r: 6,   pts: 700, threat: true },
+  brute:   { hp: 8, r: 10,  pts: 1500, threat: true },
+  wasp:    { hp: 1, r: 4,   pts: 120 },
+  burrower:{ hp: 2, r: 6,   pts: 450, threat: true },
+  crystal: { hp: 2, r: 6,   pts: 300 },
+  bat:     { hp: 1, r: 4,   pts: 140 },
+  salamander: { hp: 3, r: 7, pts: 550, threat: true },
+});
+const NEW_INFO = {
+  diver: 'Diver: it aims along a red line, then dives at you. Lock it before it lands.',
+  phantom: 'Phantom: it flickers out of sight. Lock it while it is visible.',
+  bomber: 'Bomber: it lays slow mines. Sweep the whole trail in one volley.',
+  linker: 'Linker: its tethered flock cannot be locked until the Linker dies.',
+  sniper: 'Sniper: it charges a long beam. Kill it before the beam fires.',
+  brute: 'Brute: heavily armoured. Pour a full volley into it.',
+  wasp: 'Sand Wasps: fast, zig-zagging swarmers.',
+  burrower: 'Burrower: pops out of the ground to fire upward.',
+  crystal: 'Ice Crystal: shatters into shards when it breaks.',
+  bat: 'Magma Bat: drops a burning ember when it dies. Lock the ember too.',
+  salamander: 'Salamander: crawls the lava and spits fire upward.',
+};
+function introduce(kind) {
+  S.seenKinds ||= new Set();
+  if (S.seenKinds.has(kind) || !NEW_INFO[kind]) return;
+  S.seenKinds.add(kind);
+  S.hint = { text: 'NEW · ' + NEW_INFO[kind], until: S.t + 6 };
+}
+function dangerFlash(e) { const k = clamp(e.charge || 0, 0, 1); if (e.eyeMat) e.eyeMat.color.setRGB(2.6, 0.3 + (1 - k) * 1.2, 0.3); }
+
+// Diver: approaches, aims along a red line, then dives straight at the dragon
+function diver(o = {}) {
+  const g = new THREE.Group(), body = new THREE.Mesh(G.darter, Mt.hull); g.add(body);
+  for (const s of [-1, 1]) { const f = new THREE.Mesh(G.wing, Mt.hull2); f.scale.set(0.7 * s, 0.7, 0.9); g.add(f); }
+  const eyeMat = Mt.red.clone(), eye = new THREE.Mesh(G.orb, eyeMat); eye.scale.setScalar(0.42); eye.position.z = 1.6; g.add(eye);
+  g.scale.setScalar(2.4);
+  const lim = Math.max(50, canyonHalf(rig.position.z) * 0.7);
+  addEnemy('diver', g, Object.assign({ x: rnd(-lim, lim), y: rnd(15, 45), a: 700, aT: rnd(230, 300), eyeMat, st: 0, v: new V3(), upd(e, dt) {
+    const m = e.mesh;
+    if (e.st === 0) { const k = smooth(0, 1.6, e.age); m.position.set(e.x, e.y, -lerp(e.a, e.aT, k)); if (e.age > 1.6) { e.st = 1; e.aimT = 0; } }
+    else if (e.st === 1) {
+      e.aimT += dt; e.aimLine = 1; e.charge = e.aimT / 1.2; dangerFlash(e);
+      m.lookAt(D.group.getWorldPosition(tmpV));
+      if (e.aimT > 1.2) { e.st = 2; e.aimLine = 0; e.v.copy(S.dl).sub(m.position).normalize().multiplyScalar(240 * (e.swift ? 1.4 : 1)); sfx.pew(true); }
+    } else {
+      m.position.addScaledVector(e.v, dt);
+      if (m.position.distanceTo(S.dl) < 3 + 2 * D.scale) { e.alive = false; explode(m.getWorldPosition(new V3()), 1); damage({ by: 'a Diver', q: quadOf(m.position) }); }
+      else if (m.position.z > 40) e.alive = false;
+    }
+  } }, o));
+}
+// Phantom: blinks in and out of sight; it can only be locked while visible
+function phantom(o = {}) {
+  const frost = ST.biome === 'frost', mat = new THREE.MeshStandardMaterial({ color: frost ? 0xcfe8ff : 0x6a5a8a, emissive: frost ? 0x406080 : 0x302050, roughness: 0.3, flatShading: true, transparent: true, opacity: 0.9 });
+  const g = new THREE.Group(), core = new THREE.Mesh(G.crystal, mat); core.scale.set(1, 0.7, 1); g.add(core);
+  for (let i = 0; i < 3; i++) { const t = new THREE.Mesh(G.spike, mat); t.position.set((i - 1) * 0.6, -1, 0); t.rotation.x = Math.PI; t.scale.set(0.6, 1.4, 0.6); g.add(t); }
+  const eye = new THREE.Mesh(G.orb, Mt.eyes[1]); eye.scale.setScalar(0.3); eye.position.z = 0.8; g.add(eye);
+  g.scale.setScalar(3);
+  addEnemy('phantom', g, Object.assign({ name: frost ? 'a Wind Wraith' : 'a Phantom', bx: rnd(-70, 70), by: rnd(15, 45), a0: rnd(600, 700), mat, ph: rnd(0, TAU), upd(e, dt) {
+    const ahead = e.a0 - 70 * e.age;
+    e.mesh.position.set(e.bx + Math.sin(e.age * 1.3 + e.ph) * 30, e.by + Math.sin(e.age * 2 + e.ph) * 8, -ahead);
+    const cyc = (e.age + e.ph) % 2.2, vis = cyc < 1.25;
+    e.hidden = !vis; e.mat.opacity = vis ? 0.9 : 0.08 + 0.05 * Math.sin(e.age * 30);
+    if (ahead < -30) e.alive = false;
+  } }, o));
+}
+// Bomber: crosses ahead laying slow, lockable mines toward the dragon
+function bomber(o = {}) {
+  const g = new THREE.Group(), hull = new THREE.Mesh(G.droneBody, Mt.hull); hull.scale.set(1.6, 0.8, 1.4); g.add(hull);
+  for (const s of [-1, 1]) { const w = new THREE.Mesh(G.wing, Mt.hull2); w.scale.set(1.3 * s, 1, 1.2); g.add(w); }
+  const bay = new THREE.Mesh(G.orb, Mt.meteor); bay.scale.setScalar(0.5); bay.position.y = -0.6; g.add(bay);
+  g.scale.setScalar(3);
+  const side = Math.random() < 0.5 ? 1 : -1, w = visHalfW(330);
+  addEnemy('bomber', g, Object.assign({ x: -side * w * 1.3, vx: side * 55, y: rnd(35, 55), a: rnd(300, 380), dropT: 1, upd(e, dt) {
+    e.x += e.vx * dt * (e.swift ? 1.4 : 1); e.a -= 15 * dt; e.mesh.position.set(e.x, e.y, -e.a); e.mesh.rotation.y = Math.sign(e.vx) * Math.PI / 2;
+    e.dropT -= dt;
+    if (e.dropT <= 0 && phase === 'play' && Math.abs(e.x) < w * 1.1) { e.dropT = 0.55; shoot(e.mesh.position.clone().add(new V3(0, -4, 0)), rnd(4, 5), 'a Bomber mine', new V3(rnd(-10, 10), rnd(-6, 6), rnd(-10, 10)), 3.1); }
+    if (Math.sign(e.vx) * e.x > w * 1.5) e.alive = false;
+  } }, o));
+}
+// Linker: tethers a flock; tethered enemies are shielded until the Linker dies
+function linker(o = {}) {
+  const g = new THREE.Group(), core = new THREE.Mesh(G.orb, Mt.green); core.scale.setScalar(0.9); g.add(core);
+  const r1 = new THREE.Mesh(G.tether, Mt.hull2), r2 = new THREE.Mesh(G.tether, Mt.hull2); r2.rotation.x = Math.PI / 2; g.add(r1, r2);
+  g.scale.setScalar(3.2);
+  const by = rnd(25, 45), bx = rnd(-40, 40), hue = rh(), linked = [];
+  const e = addEnemy('linker', g, Object.assign({ bx, by, a0: 680, linked, r1, r2, upd(e, dt) {
+    const ahead = e.a0 - 62 * e.age;
+    e.mesh.position.set(e.bx + Math.sin(e.age * 0.8) * 20, e.by, -ahead);
+    e.r1.rotation.y += dt * 2; e.r2.rotation.z += dt * 2.5;
+    for (const l of e.linked) l.shielded = l.alive;
+    if (ahead < -30) e.alive = false;
+  } }, o));
+  for (let i = 0; i < 6; i++) { const a = i / 6 * TAU; drone({ hue, bx: bx + Math.cos(a) * 24, by: by + Math.sin(a) * 14, a0: 690, va: -62, amp: 2 }); linked.push(S.enemies[S.enemies.length - 1]); }
+  e.onDeath = () => { for (const l of linked) l.shielded = false; };
+  for (const l of linked) { l.shielded = true; l.tether = e; }
+}
+// Sniper: holds far back and charges a beam; kill it during the charge
+function sniper(o = {}) {
+  const g = new THREE.Group(), body = new THREE.Mesh(G.darter, Mt.hull); body.scale.set(0.7, 0.7, 1.6); g.add(body);
+  const ring = new THREE.Mesh(G.ring, Mt.rim); ring.scale.setScalar(0.6); g.add(ring);
+  const eyeMat = Mt.red.clone(), eye = new THREE.Mesh(G.orb, eyeMat); eye.scale.setScalar(0.4); eye.position.z = 2.6; g.add(eye);
+  g.scale.setScalar(3);
+  const lim = Math.max(50, canyonHalf(rig.position.z) * 0.6);
+  addEnemy('sniper', g, Object.assign({ x: rnd(-lim, lim), y: rnd(40, 70), a: rnd(560, 650), eyeMat, ring, chargeT: -2, upd(e, dt) {
+    const m = e.mesh; m.position.set(e.x + Math.sin(e.age * 0.4) * 10, e.y, -e.a); m.lookAt(D.group.getWorldPosition(tmpV)); e.ring.rotation.z += dt * (1 + (e.charge || 0) * 8);
+    e.chargeT += dt; e.charge = clamp(e.chargeT / 2.6, 0, 1); e.aimLine = e.chargeT > 0 ? e.charge : 0; dangerFlash(e);
+    if (e.chargeT > 2.6 && phase === 'play') { if (shoot(m.position.clone(), 0.75, 'a Sniper', null, 2.4)) sfx.pew(true); e.chargeT = -3; }
+    if (e.age > 18) { e.y += dt * 60; if (e.y > 200) e.alive = false; }
+  } }, o));
+}
+// Brute: a slow armoured gunship that soaks a whole volley
+function brute(o = {}) {
+  const g = new THREE.Group(), hull = new THREE.Mesh(new THREE.DodecahedronGeometry(1, 0), Mt.hull); hull.scale.set(2.2, 1.6, 2.6); g.add(hull);
+  for (let i = 0; i < 6; i++) { const p = new THREE.Mesh(G.core, Mt.rim); const a = i / 6 * TAU; p.position.set(Math.cos(a) * 2, Math.sin(a) * 1.4, 0.6); p.scale.setScalar(0.7); g.add(p); }
+  const eye = new THREE.Mesh(G.orb, Mt.red); eye.scale.setScalar(0.7); eye.position.z = 2.5; g.add(eye);
+  g.scale.setScalar(3.3);
+  addEnemy('brute', g, Object.assign({ hp: 8 + 2 * S.stageNo, x: rnd(-50, 50), y: rnd(25, 45), a: 750, aT: rnd(260, 320), fireT: 3, upd(e, dt) {
+    const k = smooth(0, 5, e.age), m = e.mesh;
+    m.position.set(e.x + Math.sin(e.age * 0.5) * 25, e.y + (e.age > 20 ? (e.age - 20) ** 2 * 5 : 0), -lerp(e.a, e.aT, k)); m.lookAt(D.group.getWorldPosition(tmpV));
+    e.fireT -= dt;
+    if (e.fireT <= 0 && e.age > 4 && e.age < 20 && phase === 'play') { barrage(m.position.clone(), 3, 9, 2.8, 'a Brute'); e.fireT = 3.2; }
+    if (m.position.y > 260) e.alive = false;
+  } }, o));
+}
+// ---- land natives ----
+function wasps(n) {
+  const w = visHalfW(320), side = Math.random() < 0.5 ? 1 : -1, hue = rh();
+  for (let i = 0; i < n; i++) {
+    const g = new THREE.Group(), b = new THREE.Mesh(G.droneBody, Mt.wasp); b.scale.set(0.7, 0.7, 1.2); g.add(b);
+    const band = new THREE.Mesh(G.droneBody, Mt.waspBand); band.scale.set(0.72, 0.72, 0.4); g.add(band);
+    const wl = new THREE.Mesh(G.wing, Mt.aegis), wr = new THREE.Mesh(G.wing, Mt.aegis); wr.scale.x = -1; g.add(wl, wr);
+    const eye = new THREE.Mesh(G.orb, Mt.eyes[hue]); eye.scale.setScalar(0.32); eye.position.z = 1.3; g.add(eye);
+    g.userData.wings = [wl, wr]; g.scale.setScalar(1.9);
+    addEnemy('wasp', g, { hue, bx: side * (-0.6 + 1.2 * i / Math.max(1, n - 1)) * w * 0.7, by: rnd(10, 45), a0: 650 + i * 22, va: -rnd(95, 115), ph: rnd(0, TAU), upd(e, dt) {
+      const ahead = e.a0 + e.va * e.age * (e.swift ? 1.4 : 1), m = e.mesh;
+      m.position.set(e.bx + Math.sin(e.age * 4.5 + e.ph) * 18, e.by + Math.sin(e.age * 7 + e.ph) * 5, -ahead);
+      const f = Math.sin(e.age * 40) * 0.6; m.userData.wings[0].rotation.z = f; m.userData.wings[1].rotation.z = -f;
+      if (ahead < -30) e.alive = false;
+    } });
+  }
+}
+// Burrower (desert) / Salamander (lava): rises from the ground, fires upward, sinks again
+function groundGun(kind) {
+  const sala = kind === 'salamander', g = new THREE.Group();
+  if (sala) { const b = new THREE.Mesh(G.wormSeg, Mt.sala); b.scale.set(1.4, 0.8, 2.6); g.add(b); for (let i = 0; i < 4; i++) { const s = new THREE.Mesh(G.spike, Mt.sala); s.position.set(0, 0.6, -1.5 + i); s.scale.set(0.5, 0.8, 0.5); g.add(s); } }
+  else { const b = new THREE.Mesh(new THREE.ConeGeometry(1.4, 2.4, 6), Mt.sand); g.add(b); }
+  const eye = new THREE.Mesh(G.orb, Mt.meteor); eye.scale.setScalar(0.55); eye.position.set(0, sala ? 0.5 : 0.9, 0.8); g.add(eye);
+  g.scale.setScalar(3.2);
+  const gY = groundLocalY(), lim = Math.max(40, canyonHalf(rig.position.z) * 0.6);
+  addEnemy(kind, g, { x: rnd(-lim, lim), a: rnd(320, 420), gY, fireT: 1.6, upd(e, dt) {
+    const up = smooth(0, 1, e.age) * (1 - smooth(7, 8, e.age)), m = e.mesh;
+    e.a -= 12 * dt; m.position.set(e.x, e.gY - 8 + up * 14, -e.a); e.hidden = up < 0.4;
+    if (up > 0.9 && Math.random() < 0.3) { m.getWorldPosition(tmpV2); smokeP.spawn(tmpV2.x, tmpV2.y - 3, tmpV2.z, rnd(-4, 4), rnd(4, 10), rnd(-4, 4), sala ? 0.3 : 0.75, sala ? 0.15 : 0.6, sala ? 0.1 : 0.42, 6, 1, { grow: 6, alpha: 0.6 }); }
+    e.fireT -= dt;
+    if (e.fireT <= 0 && up > 0.9 && phase === 'play') { barrage(m.position.clone().add(new V3(0, 4, 0)), 2, 7, 2.6, sala ? 'a Salamander' : 'a Burrower', sala ? 3.1 : 2.1); e.fireT = 2.4; }
+    if (e.age > 8.2) e.alive = false;
+  } });
+}
+function crystals(n) {
+  const w = visHalfW(320);
+  for (let i = 0; i < n; i++) {
+    const g = new THREE.Group(), c = new THREE.Mesh(G.crystal, Mt.ice); g.add(c);
+    const hue = rh(), eye = new THREE.Mesh(G.orb, Mt.eyes[hue]); eye.scale.setScalar(0.35); g.add(eye);
+    g.scale.setScalar(2.8);
+    addEnemy('crystal', g, { hue, bx: rnd(-0.7, 0.7) * w, by: rnd(10, 50), a0: rnd(640, 760), va: -75, amp: 5, ph: rnd(0, TAU), upd(e, dt) { updDrone(e, dt); e.mesh.rotation.y += dt * 1.5; } });
+  }
+}
+function bats(n) {
+  const w = visHalfW(320);
+  for (let i = 0; i < n; i++) {
+    const g = new THREE.Group(), b = new THREE.Mesh(G.orb, Mt.bat); b.scale.set(0.6, 0.6, 0.9); g.add(b);
+    const wl = new THREE.Mesh(G.wing, Mt.bat), wr = new THREE.Mesh(G.wing, Mt.bat); wr.scale.x = -1; wl.scale.y = wr.scale.y = 0.4; g.add(wl, wr);
+    const hue = rh(), eye = new THREE.Mesh(G.orb, Mt.eyes[hue]); eye.scale.setScalar(0.25); eye.position.z = 0.8; g.add(eye);
+    g.userData.wings = [wl, wr]; g.scale.setScalar(2.2);
+    addEnemy('bat', g, { hue, bx: rnd(-0.75, 0.75) * w, by: rnd(5, 45), a0: rnd(620, 760), va: -rnd(80, 100), ph: rnd(0, TAU), upd(e, dt) {
+      const ahead = e.a0 + e.va * e.age * (e.swift ? 1.4 : 1), m = e.mesh;
+      m.position.set(e.bx + Math.sin(e.age * 3 + e.ph) * 14 + Math.sin(e.age * 7.3) * 4, e.by + Math.abs(Math.sin(e.age * 5 + e.ph)) * 10, -ahead);
+      const f = Math.sin(e.age * 18) * 0.9; m.userData.wings[0].rotation.z = f; m.userData.wings[1].rotation.z = -f;
+      if (ahead < -30) e.alive = false;
+    } });
+  }
+}
+// ---- elites: gold halo, double score and growth, and one trait ----
+const ELITE_OK = new Set(['drone', 'darter', 'wasp', 'bat', 'crystal', 'gunner', 'aegis', 'diver', 'phantom', 'bomber', 'brute', 'splitter']);
+const AFFIX = ['shielded', 'swift', 'splitting', 'vengeful'];
+function maybeElite(e) {
+  if (!S || S.lvl < 8 || !ELITE_OK.has(e.kind) || e.tether || Math.random() > Math.min(0.3, (0.04 + 0.008 * S.lvl) * (S.route === 'storm' ? 2 : 1))) return;
+  const a = AFFIX[(Math.random() * AFFIX.length) | 0];
+  e.elite = a; e.pts *= 2; e.xpMul = 2;
+  if (a === 'shielded') e.hp += 2;
+  if (a === 'swift') { e.swift = true; if (e.va) e.va *= 1.4; if (e.vx) e.vx *= 1.4; }
+  const halo = new THREE.Mesh(G.ring, Mt.gold); halo.scale.setScalar(0.9); e.mesh.add(halo); e.halo = halo;
+  e.mesh.scale.multiplyScalar(1.2);
+}
+function eliteDeath(e) {
+  if (e.elite === 'splitting') shards(e.mesh.position.clone(), e.hue ?? rh());
+  if (e.elite === 'vengeful' && phase === 'play') barrage(e.mesh.position.clone(), 4, 10, 2.6, 'a vengeful elite');
 }
 
 // ---------- sandworm ----------
@@ -1725,7 +2008,7 @@ function updElite(dt) {
 }
 // Swarm Incoming: rings of drones in two colours pour through, built for one enormous volley
 function stampede(q) {
-  popup('SWARM INCOMING', W / 2, H * 0.3, true, '#ffb347'); sfx.warn();
+  popup('SWARM INCOMING', W / 2, H * 0.3, true, '#ffb347'); sfx.warn(); S.swarmUntil = S.t + 9;
   const hues = [rh(), rh()], w = visHalfW(320), rings = 4 + Math.round(Math.min(2, q));
   for (let k = 0; k < rings; k++) later(k * 1.1, () => {
     if (phase !== 'play' && phase !== 'choose') return;
@@ -1982,14 +2265,37 @@ function spawnColossus() {
 }
 
 // ---------- damage / effects ----------
-const XPV = { drone: 1, darter: 1, gunner: 3, bullet: 0.25, weak: 4, core: 4, ccore: 0, aegis: 2, splitter: 2, shard: 0.5, mirror: 3, iheart: 4, ihead: 0, eye: 5, fist: 6, chest: 0, pod: 3, ecore: 6 };
-const locksFor = st => FORMS[formName].locks - 2 + st * 2 + (S?.lockBonus || 0);
+const XPV = { diver: 2, phantom: 2, bomber: 3, linker: 4, sniper: 4, brute: 8, wasp: 1, burrower: 3, crystal: 2, bat: 1, salamander: 4, drone: 1, darter: 1, gunner: 3, bullet: 0.25, weak: 4, core: 4, ccore: 0, aegis: 2, splitter: 2, shard: 0.5, mirror: 3, iheart: 4, ihead: 0, eye: 5, fist: 6, chest: 0, pod: 3, ecore: 6 };
+const locksFor = st => FORMS[formName].locks - 2 + st + (S?.lockBonus || 0);
+const PERKS = {
+  lock:  { name: '+1 LOCK',            apply() { S.lockBonus++; S.maxL = locksFor(S.stage); } },
+  heart: { name: '+1 HEART',           apply() { S.maxHp++; S.hp = Math.min(S.maxHp, S.hp + 1); } },
+  power: { name: '+15% LANCE POWER',   apply() { S.power += 0.15; } },
+  speed: { name: '+10% LANCE SPEED',   apply() { S.lanceSpd *= 0.9; } },
+  reach: { name: '+8% LOCK REACH',     apply() { S.reach += 0.08; } },
+  rage:  { name: '+15% BERSERK GAIN',  apply() { S.rage += 0.15; } },
+  cool:  { name: '+25% FIRE COOLING',  apply() { S.cool += 0.25; } },
+};
+function perkFor(lvl) {
+  if (lvl % 4 === 0) return 'lock';
+  if (lvl % 6 === 3) return 'heart';
+  const pool = ['power', 'speed', 'reach', 'rage', 'power']; if (has('fire')) pool.push('cool');
+  return pool[(Math.random() * pool.length) | 0];
+}
+// called whenever xp changes; evolutions and ascensions take over at their levels and resume the check afterwards
 function checkEvolve() {
   if (phase !== 'play' || S.evolveT > 0) return;
-  if (S.stage < STAGES.length - 1) { if (S.xp >= XP_AT[S.stage + 1]) evolve(); }
-  else if (S.xp >= XP_AT[STAGES.length - 1] + 70 * (S.ascN + 1)) ascend();
+  while (S.xp >= xpNeed(S.lvl)) {
+    S.xp -= xpNeed(S.lvl); S.lvl++;
+    const nextEvo = LVL_EVOLVE[S.stage + 1];
+    if (nextEvo && S.lvl >= nextEvo) { evolve(); return; }
+    if (S.stage >= STAGES.length - 1 && S.lvl % 5 === 0) { ascend(); return; }
+    const pk = perkFor(S.lvl); PERKS[pk].apply();
+    popup(`LEVEL ${S.lvl} · ${PERKS[pk].name}`, W / 2, H * 0.4, false, '#86f2ff'); sfx.chime();
+    burst(40, D.form.lance, 14);
+  }
 }
-// fully grown dragons keep ascending: +1 heart and another mutation every 70 kills' worth of growth
+// fully grown dragons keep ascending: +1 heart and another mutation every 5 levels
 function ascend() {
   S.ascN++; S.evolveT = 1.6; S.roar = 1.6; slow(0.3, 0.8); sfx.evolve(); buzz([60, 40, 160]);
   later(0.6, () => {
@@ -2012,6 +2318,10 @@ const MUTS = [
   { id: 'prism',   g: 'PH', name: 'Prism Heart',   d: 'Mono-colour chains pay ×3, and chains of 5+ feed Berserk.' },
   { id: 'over',    g: 'OC', name: 'Overcharge',    d: 'Charge up to LV5. LV3+ lances pierce into a second target.' },
   { id: 'vamp',    g: 'HF', name: 'Heartfeeder',   d: 'Every 30 kills restores a heart.' },
+  { id: 'arc',     g: 'AL', name: 'Arc Lances',    d: 'Every lance hit arcs lightning into up to 2 nearby enemies.' },
+  { id: 'phoenix', g: 'PX', name: 'Phoenix Heart', d: 'Once per stage, a killing blow revives you with 3 hearts in a burst of flame.' },
+  { id: 'hydra',   g: 'HH', name: 'Hydra Heads',   d: '+50% locks, but lances can no longer charge.' },
+  { id: 'rampage', g: 'RP', name: 'Rampage',       d: 'Perfect volleys add 35% Berserk and 10 to your combo.' },
   { id: 'thunder', g: 'TC', name: 'Thunder Crown', d: 'Perfect volleys release a shockwave that erases every enemy shot.' },
 ];
 const mutPool = () => MUTS.filter(m => !S.muts.has(m.id) && mutUnlocked(m.id));
@@ -2042,6 +2352,7 @@ function pickMutation(id) {
   S.muts.add(id); D.setMuts(S.muts);
   if (id === 'glass') { S.lockBonus += 3; S.maxL = locksFor(S.stage); S.maxHp = Math.max(2, S.maxHp - 1); S.hp = Math.min(S.hp, S.maxHp); }
   if (id === 'iron') { S.maxHp += 2; S.hp += 2; }
+  if (id === 'hydra') { S.lockBonus += Math.ceil(S.maxL * 0.5); S.maxL = locksFor(S.stage); }
   $('mutate').hidden = true; phase = 'play';
   $('turn-l').hidden = $('turn-r').hidden = false; $('breath').hidden = !has('fire');
   popup(m.name.toUpperCase(), W / 2, H * 0.3, true, '#86f2ff'); sfx.chime(); buzz(20);
@@ -2058,7 +2369,7 @@ function evolve() {
     burst(160, D.form.lance, 40);
     for (const e of S.enemies) if (e.kind === 'bullet' && e.alive) { e.alive = false; puff(e.mesh.getWorldPosition(new V3())); }
     popup(dragonName() ? `${dragonName().toUpperCase()} · ${st.name.toUpperCase()}` : `EVOLVED · ${st.name.toUpperCase()}`, W / 2, H * 0.3, true, '#ffb347');
-    later(0.45, () => popup('+2 LOCKS · +1 HEART', W / 2, H * 0.36, false, '#86f2ff'));
+    later(0.45, () => popup(`LEVEL ${S.lvl} · +1 LOCK · +1 HEART`, W / 2, H * 0.36, false, '#86f2ff'));
   });
   later(1.3, () => offerMutations(`Evolved · ${st.name}`));
 }
@@ -2077,28 +2388,99 @@ function cocoon() {
     glowP.spawn(wp.x + Math.cos(a) * s, wp.y + h * s * 0.6, wp.z + Math.sin(a) * s, -Math.cos(a) * s * 1.6 + rigT.x * vs, rnd(1, 4) + rigT.y * vs, -Math.sin(a) * s * 1.6 + rigT.z * vs, g[0], g[1], g[2], 1.6, 0.5, { drag: 1 });
   }
 }
-function stageCleared() { meta.onStageClear?.(S.stageNo); if (S.stageNo + 1 < stageCount()) nextStage(); else endRun('clear'); }
-function nextStage() {
-  S.stageNo++;
+// ---- combo: kills in quick succession build a multiplier; a hit or a 4 s pause breaks it ----
+const comboMul = n => n >= 60 ? 3 : n >= 30 ? 2 : n >= 12 ? 1.5 : 1;
+function comboKill() {
+  const before = comboMul(S.combo); S.combo++; S.comboT = 4; S.bestCombo = Math.max(S.bestCombo || 0, S.combo);
+  const after = comboMul(S.combo);
+  if (after > before) { popup(`COMBO ×${after}`, W / 2, H * 0.2, true, '#ffd27a'); sfx.swell([57, 64, 69, 76], 0.03, 0.7, 0, 2000); }
+  objTick('combo', S.combo, true);
+}
+function comboBreak() { if (S.combo >= 12) popup(`COMBO ${S.combo} ENDED`, W / 2, H * 0.2, false, '#b5a68d'); S.combo = 0; S.comboT = 0; }
+// ---- bonus objectives: two per stage, paying embers and score ----
+const LAND_KILL = { dusk: ['wasp', 'Sand Wasps', 20], frost: ['crystal', 'Ice Crystals', 12], ember: ['bat', 'Magma Bats', 20] };
+function makeObjectives() {
+  const land = LAND_KILL[ST.biome], hue = rh(), pool = [
+    { id: 'kind', kind: land[0], text: `Down ${land[2]} ${land[1]}`, goal: land[2] },
+    { id: 'hue', hue, text: `Down 30 ${HUES[hue].name.toLowerCase()}-eyed enemies`, goal: 30 },
+    { id: 'perfect', text: 'Land 3 perfect volleys', goal: 3 },
+    { id: 'combo', text: 'Reach a 40 combo', goal: 40, max: true },
+    { id: 'elite', text: 'Down 3 elites', goal: 3 },
+    { id: 'chain', text: 'Down 8 in a single volley', goal: 8, max: true },
+    { id: 'special', text: 'Down 5 Divers, Snipers or Bombers', goal: 5 },
+  ];
+  const out = [];
+  while (out.length < 2) { const o = pool.splice((Math.random() * pool.length) | 0, 1)[0]; out.push(Object.assign(o, { prog: 0, done: false, reward: 12 + 4 * S.stageNo })); }
+  return out;
+}
+function objTick(id, n = 1, absolute = false, filter) {
+  for (const o of S.objs || []) {
+    if (o.done || o.id !== id || (filter && !filter(o))) continue;
+    o.prog = absolute ? Math.max(o.prog, n) : o.prog + n;
+    if (o.prog >= o.goal) {
+      o.done = true; o.prog = o.goal; M.embers += o.reward; saveMeta(); S.score += 5000 * (S.stageNo + 1);
+      popup(`OBJECTIVE ✓ ${o.text.toUpperCase()} · +${o.reward}◆`, W / 2, H * 0.46, false, '#ffd27a'); sfx.full();
+    }
+  }
+}
+const ROUTES = {
+  canyon: { g: 'LC', name: 'Low Canyon', d: 'Tight canyon walls and steady waves. The safe road.' },
+  storm:  { g: 'HS', name: 'High Storm', d: 'Open sky and lightning. 30% more enemies and elites, ×1.4 score, a third objective and 1.5× objective rewards.' },
+  ruins:  { g: 'SR', name: 'Sunken Ruins', d: 'Arches and ruins over a river gorge, with an extra objective.' },
+};
+function stageCleared() {
+  meta.onStageClear?.(S.stageNo);
+  if (S.stageNo + 1 >= stageCount()) { endRun('clear'); return; }
+  if (S.mode === 'rush' || S.mode === 'daily') { nextStage(); return; }
+  offerRoutes();
+}
+// a fork in the sky: pick the next route, like the doors in Hades or the map in Slay the Spire
+function offerRoutes() {
+  const keys = Object.keys(ROUTES).sort(() => Math.random() - 0.5).slice(0, 2);
+  phase = 'choose'; S.locks = []; S.charge = 0; ptr.down = false; touches.clear(); two = null;
+  $('mu-kicker').textContent = `Stage ${S.stageNo + 1} cleared · next: ${BIOMES[stageDef(S.stageNo + 1).biome].name}`;
+  $('mu-title').textContent = 'Choose your route';
+  const box = $('mu-opts'); box.textContent = '';
+  keys.forEach((k, i) => {
+    const r = ROUTES[k], b = document.createElement('button'); b.className = 'mopt'; b.type = 'button';
+    const g = document.createElement('span'); g.className = 'g'; g.textContent = r.g;
+    const tx = document.createElement('span'), nm = document.createElement('b'), ds = document.createElement('span'); nm.textContent = `${i + 1} · ${r.name}`; ds.className = 'd'; ds.textContent = r.d;
+    tx.append(nm, ds); b.append(g, tx); b.addEventListener('click', () => { $('mutate').hidden = true; $('mu-title').textContent = 'Choose a mutation'; phase = 'play'; sfx.chime(); nextStage(k); }); box.append(b);
+  });
+  mutChoices = keys.map(k => ({ id: '__route', route: k }));
+  for (const id of ['turn-l', 'turn-r', 'berserk', 'breath']) $(id).hidden = true;
+  S.breathing = false; $('mutate').hidden = false; box.querySelector('button')?.focus({ preventScroll: true });
+}
+function nextStage(route) {
+  S.stageNo++; S.route = route || null; S.phoenixUsed = false;
   for (const e of S.enemies) { e.alive = false; setFlash(e, false); if (!e.attached) e.mesh.parent?.remove(e.mesh); }
   S.enemies = []; S.lances = []; S.locks = []; S.charge = 0;
   if (S.boss) { rig.remove(S.boss.g); S.boss = null; }
   if (S.worm) endWorm();
   if (S.elite) { rig.remove(S.elite.g); S.elite = null; }
-  buildStage(stageDef(S.stageNo));
-  S.d = 60; S.si = 0; S.speed = 70; S.endT = 0;
+  buildStage({ ...stageDef(S.stageNo), route: S.route });
+  $('turn-l').hidden = $('turn-r').hidden = false; $('breath').hidden = !has('fire');
+  S.d = 60; S.si = 0; S.speed = 70; S.endT = 0; S.dir = { mode: 'build', timer: 3, n: 0, wave: S.dir.wave, cycle: 0 };
   if (S.mode === 'rush') rushToBoss();
   glowP.clear(); smokeP.clear();
   S.flash = 1; S.hp = Math.min(S.maxHp, S.hp + 2);
   Music.mode = 'stage';
-  S.stageHits = 0;
+  S.stageHits = 0; S.objs = makeObjectives();
+  if (S.route === 'storm' || S.route === 'ruins') S.objs.push(...makeObjectives().filter(o => !S.objs.some(x => x.id === o.id)).slice(0, 1));
+  if (S.route === 'storm') for (const o of S.objs) o.reward = Math.round(o.reward * 1.5);
+  if (S.route) later(0.5, () => popup(ROUTES[S.route].name.toUpperCase(), W / 2, H * 0.36, false, '#86f2ff'));
   popup(`STAGE ${S.stageNo + 1} · ${ST.B.name.toUpperCase()}`, W / 2, H * 0.3, true, '#ffb347');
   later(1.6, () => offerMutations('Stage cleared'));
 }
 function damage(info = {}) {
   if (phase !== 'play' || S.evolveT > 0) return;
-  S.hp--; S.hits++; S.stageHits++; S.hurt = 1; S.shake = 0.5; sfx.hurt(); buzz([40, 30, 60]);
+  S.hp--; S.hits++; S.stageHits++; S.recentHits++; S.cleanT = 0; comboBreak(); S.hurt = 1; S.shake = 0.5; sfx.hurt(); buzz([40, 30, 60]);
   S.lastHit = { by: info.by || 'enemy fire', rel: info.q == null ? 0 : (info.q - viewIndex + 4) % 4, note: info.note };
+  if (S.hp <= 0 && has('phoenix') && !S.phoenixUsed) {
+    S.phoenixUsed = true; S.hp = Math.min(3, S.maxHp); S.flash = 1; S.roar = 1.6; sfx.roar(); burst(200, [2.4, 1.0, 0.25], 50);
+    for (const e of S.enemies) if (e.kind === 'bullet' && e.alive) { e.alive = false; puff(e.mesh.getWorldPosition(new V3())); }
+    popup('PHOENIX · REBORN', W / 2, H * 0.3, true, '#ff6a3c'); return;
+  }
   if (S.hp <= 0) {
     phase = 'dying'; S.endT = S.t + 2.2; S.dead = true; S.locks = [];
     explode(D.group.getWorldPosition(new V3()), 2); slow(0.3, 0.8);
@@ -2148,9 +2530,9 @@ function segDist(px, py, ax, ay, bx, by) {
   const dx = bx - ax, dy = by - ay, L = dx * dx + dy * dy, t = L ? clamp(((px - ax) * dx + (py - ay) * dy) / L, 0, 1) : 0;
   return Math.hypot(px - (ax + dx * t), py - (ay + dy * t));
 }
-const reach = () => has('hunter') ? 990 : 760;
+const reach = () => (has('hunter') ? 990 : 760) * (1 + (S?.reach || 0));
 function lockSweep() {
-  const rm = has('hunter') ? 1.6 : 1, rc = reach();
+  const rm = (has('hunter') ? 1.6 : 1) * (1 + S.reach * 0.6), rc = reach();
   for (const t of targets()) {
     const wp = t.mesh.getWorldPosition(tmpV);
     if (!toScreen(wp, scr) || scr.d > rc || scr.x < -30 || scr.x > W + 30 || scr.y < -30 || scr.y > H + 30) { t._in = false; continue; }
@@ -2184,7 +2566,7 @@ function fire(list, berserk = false) {
     else { c.x += side * rnd(6, 18); c.y += rnd(4, 14); c.z -= rnd(22, 45); }
     const tl = rig.worldToLocal(t.mesh.getWorldPosition(new V3()));
     const dist = tl.distanceTo(p0);
-    S.lances.push({ idx: i, t, v, p0: p0.clone(), c, last: tl, start: S.t + i * (berserk ? 0.022 : 0.055), dur: rnd(0.4, 0.55) * (0.6 + dist / 500) * spd, launched: false, end: -1, prev: null, dmg, col });
+    S.lances.push({ idx: i, t, v, p0: p0.clone(), c, last: tl, start: S.t + i * (berserk ? 0.022 : 0.055), dur: rnd(0.4, 0.55) * (0.6 + dist / 500) * spd * S.lanceSpd, launched: false, end: -1, prev: null, dmg, col });
   });
   fovKick = Math.min(fovKick + (berserk ? 4 : 1), 5); S.shake = Math.max(S.shake, berserk ? 0.3 : 0.08);
   sfx.release(lvl);
@@ -2217,7 +2599,7 @@ function updateBreath(dt) {
   } else {
     sfx.fireStop();
     S.fireDelay = Math.max(0, S.fireDelay - dt);
-    if (S.fireDelay <= 0) S.fire = Math.min(1, S.fire + dt * 0.16 * (has('ember') ? 1.7 : 1));
+    if (S.fireDelay <= 0) S.fire = Math.min(1, S.fire + dt * 0.16 * (has('ember') ? 1.7 : 1) * S.cool);
     if (S.fireLock && S.fire >= 0.35) S.fireLock = false;
   }
   const bb = $('breath'); bb.classList.toggle('cool', S.fireLock); bb.classList.toggle('on', active);
@@ -2246,6 +2628,19 @@ function burnCone(dt) {
     else smokeP.spawn(bA.x, bA.y, bA.z, dx * sp * 0.8 + vx, dy * sp * 0.8 + vy + 4, dz * sp * 0.8 + vz, 1, rnd(0.35, 0.6), 0.1, 1.1, life * 1.1, { grow: rnd(12, 20), alpha: 0.8 });
   }
   S.shake = Math.max(S.shake, 0.05);
+}
+// Arc Lances: lightning jumps from a hit to up to 2 nearby enemies for 1 damage each
+function arcFrom(src, wp, v) {
+  let n = 0;
+  for (const t of targets()) {
+    if (n >= 2 || t === src || t.kind === 'mirror') continue;
+    const p = t.mesh.getWorldPosition(new V3()); if (p.distanceTo(wp) > 70) continue;
+    n++;
+    for (let k = 0; k <= 8; k++) { const f = k / 8; glowP.spawn(lerp(wp.x, p.x, f) + rnd(-2, 2), lerp(wp.y, p.y, f) + rnd(-2, 2), lerp(wp.z, p.z, f) + rnd(-2, 2), rigT.x * S.speed, rigT.y * S.speed, rigT.z * S.speed, 1.2, 1.6, 2.6, 0.7, 0.12); }
+    t.hp -= 1; t.flash = 0.08;
+    if (t.hp <= 0) kill(t, v, p, null);
+  }
+  if (n) sfx.storm();
 }
 function stormBolts() {
   if (phase !== 'play') return;
@@ -2309,12 +2704,13 @@ function hit(L) {
       if (toScreen(wp, scr)) popup('REFLECTED', scr.x, scr.y, false, '#e8f4ff');
       damage({ by: 'your own lance, reflected by a Mirror Wisp', q: quadOf(t.mesh.position), note: 'mirror' });
     } else {
-      t.hp -= dmg; t.flash = 0.1;
+      t.hp -= dmg * (1 + S.power); t.flash = 0.1;
       // each hit in a volley sounds the next note of a rising pentatonic run
       const hn = L.v.hitN = (L.v.hitN || 0) + 1, nm = 69 + PENT[(hn - 1) % 5] + 12 * Math.min(2, Math.floor((hn - 1) / 5));
       sfx.hit(hn, t.hp <= 0);
       for (let i = 0; i < 8; i++) glowP.spawn(wp.x, wp.y, wp.z, rnd(-22, 22), rnd(-22, 22), rnd(-22, 22), 1.6, 2, 2.2, 0.8, 0.22, { drag: 4 });
       if (t.hp <= 0) kill(t, L.v, wp, L); else ring(wp, '#e8f4ff', 26);
+      if (has('arc') && !L.chain) arcFrom(t, wp, L.v);
       if (dmg >= 4 && has('over')) { const nt = nearestTarget(wp, 140, t); if (nt) chainLance(wp, nt, L.v, GOLD, 0.25); }
     }
   }
@@ -2322,18 +2718,25 @@ function hit(L) {
 }
 function kill(t, v, wp, L) {
   t.alive = false;
-  const mult = Math.max(1, v.n), pts = Math.round(t.pts * mult * (S.heatMul || 1));
+  if (t.kind !== 'bullet') comboKill();
+  const mult = Math.max(1, v.n), pts = Math.round(t.pts * mult * (S.heatMul || 1) * comboMul(S.combo) * (S.route === 'storm' ? 1.4 : 1));
+  if (LAND_KILL[ST.biome]) objTick('kind', 1, false, o => o.kind === t.kind);
+  if (t.hue != null) objTick('hue', 1, false, o => o.hue === t.hue);
+  if (t.elite) objTick('elite');
+  if (t.kind === 'diver' || t.kind === 'sniper' || t.kind === 'bomber') objTick('special');
   S.score += pts; v.kills++;
   if (!NO_RANK.has(t.kind)) S.killN++;
   if (t.hue != null) { v.hues.add(t.hue); v.hueKills++; v.huePts += pts; }
-  S.xp += XPV[t.kind] || 0; checkEvolve();
-  S.berserk = Math.min(1, S.berserk + (t.kind === 'bullet' ? 0.008 : 0.028) * (v.berserk ? 0 : 1) * (has('blood') ? 1.6 : 1));
+  S.xp += (XPV[t.kind] || 0) * (t.xpMul || 1); checkEvolve();
+  S.berserk = Math.min(1, S.berserk + (t.kind === 'bullet' ? 0.008 : 0.028) * (v.berserk ? 0 : 1) * (has('blood') ? 1.6 : 1) * S.rage);
   meta.onKill?.(t.kind);
-  const big = { core: 2, ccore: 2.5, weak: 2, bullet: 0.45, gunner: 1.5, aegis: 1.5, mirror: 1.5, splitter: 1.3, shard: 0.7, iheart: 2, ihead: 3, eye: 2, fist: 2.5, chest: 3, pod: 2, ecore: 2.5 }[t.kind] || 1;
+  const big = { brute: 2.5, sniper: 1.5, linker: 1.5, bomber: 1.6, burrower: 1.4, salamander: 1.6, diver: 1.1, core: 2, ccore: 2.5, weak: 2, bullet: 0.45, gunner: 1.5, aegis: 1.5, mirror: 1.5, splitter: 1.3, shard: 0.7, iheart: 2, ihead: 3, eye: 2, fist: 2.5, chest: 3, pod: 2, ecore: 2.5 }[t.kind] || 1;
   explode(wp, big); sfx.boom(big);
   ring(wp, t.hue != null ? HUES[t.hue].css : '#ffd27a', 46 + 22 * big); if (big >= 1.5) ring(wp, '#ffffff', 90 + 30 * big, 0.5);
   if (big >= 1.5) { S.shake = Math.max(S.shake, 0.25); if (slowT <= 0) slow(0.08, 0.07); }
-  if (t.kind === 'splitter') shards(t.mesh.position.clone(), t.hue);
+  if (t.kind === 'splitter' || t.kind === 'crystal') shards(t.mesh.position.clone(), t.hue);
+  if (t.kind === 'bat' && phase === 'play') shoot(t.mesh.position.clone(), 3.2, 'a Magma Bat ember', null, 2.4);
+  t.onDeath?.(); if (t.elite) eliteDeath(t);
   if (has('vamp') && !NO_RANK.has(t.kind)) { S.vampN++; if (S.vampN % 30 === 0 && S.hp < S.maxHp) { S.hp++; popup('+1 HEART', W / 2, H * 0.4, false, '#ff5d7d'); } }
   if (has('twin') && L && !L.chain && v.twins < 6 && t.kind !== 'bullet') { const nt = nearestTarget(wp, 160, t); if (nt) { v.twins++; chainLance(wp, nt, v, [1.2, 2.2, 1.6], 0.3); } }
   if (S.boss) S.boss.onPartKilled?.(t);
@@ -2350,11 +2753,14 @@ function volleyDone(v) {
     if (has('prism') && v.hueKills >= 5) S.berserk = Math.min(1, S.berserk + 0.1);
   }
   meta.onVolley?.(v);
+  if (!v.berserk) objTick('chain', v.kills, true);
   // the finishing hit of a big volley lands with a beat of hit-stop and a low thump
   if (v.kills >= 3) { if (slowT <= 0) slow(0.12, 0.09); S.shake = Math.max(S.shake, 0.18 + Math.min(0.25, v.kills * 0.02)); sfx.thump(0.32); }
   if (v.n >= 2 && v.kills >= 2) {
     const perfect = v.n >= S.maxL && v.kills >= v.n;
     if (perfect && has('thunder')) shockwave();
+    if (perfect) objTick('perfect');
+    if (perfect && has('rampage')) { S.berserk = Math.min(1, S.berserk + 0.35); S.combo += 10; S.comboT = 4; popup('RAMPAGE', W / 2, H * 0.33, false, '#ff6a3c'); }
     popup(perfect ? `PERFECT ${v.kills} · ×${v.n}` : `${v.kills} DOWN · ×${v.n}`, W / 2, H * 0.27, true, perfect ? '#ffb347' : '#86f2ff');
     if (perfect) { S.berserk = Math.min(1, S.berserk + 0.12); slow(0.3, 0.45); buzz([20, 30, 20, 30, 60]); sfx.full(); }
   }
@@ -2427,7 +2833,7 @@ $('turn-l').addEventListener('click', () => turn(-1));
 $('turn-r').addEventListener('click', () => turn(1));
 $('berserk').addEventListener('click', triggerBerserk);
 addEventListener('keydown', e => {
-  if (phase === 'choose' && ['Digit1', 'Digit2', 'Digit3'].includes(e.code)) { const m = mutChoices[+e.code.slice(-1) - 1]; if (m) pickMutation(m.id); return; }
+  if (phase === 'choose' && ['Digit1', 'Digit2', 'Digit3'].includes(e.code)) { const k = +e.code.slice(-1) - 1, m = mutChoices[k]; if (m?.id === '__route') $('mu-opts').querySelectorAll('button')[k]?.click(); else if (m) pickMutation(m.id); return; }
   if (phase !== 'play') return;
   if (['ArrowLeft', 'KeyA', 'KeyQ'].includes(e.code)) turn(-1);
   else if (['ArrowRight', 'KeyD', 'KeyE'].includes(e.code)) turn(1);
@@ -2505,7 +2911,7 @@ function drawHUD(dt) {
       c.fillStyle = col; c.beginPath(); c.arc(ret.x, ret.y, 2.5, 0, TAU); c.fill();
       // charge pips above the reticle
       if (S.locks.length) {
-        const maxC = has('over') ? 5 : 3, lv = Math.floor(S.charge), fr = S.charge - lv;
+        const maxC = has('hydra') ? 0 : has('over') ? 5 : 3, lv = Math.floor(S.charge), fr = S.charge - lv;
         for (let i = 0; i < maxC; i++) {
           const a = -Math.PI / 2 + (i - (maxC - 1) / 2) * 0.34, px = ret.x + Math.cos(a) * (R + 20), py = ret.y + Math.sin(a) * (R + 20);
           c.fillStyle = i < lv ? (lv >= 2 ? '#ffd27a' : '#86f2ff') : 'rgba(244,231,207,.2)';
@@ -2527,9 +2933,11 @@ function drawHUD(dt) {
   else if (S.elite) { c.fillStyle = '#ff5d7d'; c.fillRect(left, top + 44, bw * S.elite.hpNow() / S.elite.maxHp, 3); c.fillStyle = '#b5a68d'; c.font = hudFont(600, 10); c.fillText('BROOD CARRIER', left, top + 50); }
   else if (S.worm && !S.worm.dead) { c.fillStyle = '#ffb347'; c.fillRect(left, top + 44, bw * S.worm.weak.reduce((a, w) => a + (w.alive ? w.hp : 0), 0) / 8, 3); c.fillStyle = '#b5a68d'; c.font = hudFont(600, 10); c.fillText(ST.B.worm.name.toUpperCase(), left, top + 50); }
   else { c.fillStyle = '#f4e7cf'; c.fillRect(left, top + 44, bw * clamp(S.d / BOSS_D, 0, 1), 3); }
-  { const last = S.stage >= STAGES.length - 1, xf = last ? 1 : clamp((S.xp - XP_AT[S.stage]) / (XP_AT[S.stage + 1] - XP_AT[S.stage]), 0, 1);
-    c.fillStyle = '#86f2ff'; c.font = hudFont(600, 10); c.textAlign = 'left'; c.fillText((dragonName() ? dragonName().toUpperCase() + ' · ' : '') + STAGES[S.stage].name.toUpperCase() + (last ? ' · FULL GROWN' : ''), left, top + 64, W * 0.5);
+  { const xf = clamp(S.xp / xpNeed(S.lvl), 0, 1);
+    c.fillStyle = '#86f2ff'; c.font = hudFont(600, 10); c.textAlign = 'left'; c.fillText(`LV ${S.lvl} · ` + (dragonName() ? dragonName().toUpperCase() + ' · ' : '') + STAGES[S.stage].name.toUpperCase(), left, top + 64, W * 0.5);
     c.fillStyle = 'rgba(244,231,207,.15)'; c.fillRect(left, top + 78, bw, 3); c.fillStyle = '#86f2ff'; c.fillRect(left, top + 78, bw * xf, 3);
+    c.font = hudFont(600, 10); c.textAlign = 'left';
+    (S.objs || []).forEach((o, i) => { c.fillStyle = o.done ? '#ffd27a' : 'rgba(244,231,207,.75)'; c.fillText(`${o.done ? '✓' : '◇'} ${o.text} ${o.done ? '' : `${Math.min(o.prog, o.goal)}/${o.goal}`}`, left, top + 108 + i * 14, W * 0.55); });
     let mx = left; c.font = hudFont(700, 9); c.textAlign = 'center';
     for (const id of S.muts) { const m = MUTS.find(x => x.id === id); if (!m) continue; c.fillStyle = 'rgba(134,242,255,.18)'; c.fillRect(mx, top + 88, 20, 14); c.fillStyle = '#86f2ff'; c.fillText(m.g, mx + 10, top + 90); mx += 23; }
     c.textAlign = 'left'; }
@@ -2543,6 +2951,11 @@ function drawHUD(dt) {
   c.fillStyle = 'rgba(244,231,207,.15)'; c.fillRect(right - mw, top + 20, mw, 4);
   c.fillStyle = S.berserk >= 1 ? `rgba(255,179,71,${0.6 + 0.4 * Math.sin(S.t * 8)})` : '#c98a3a'; c.fillRect(right - mw, top + 20, mw * S.berserk, 4);
   c.fillStyle = '#b5a68d'; c.font = hudFont(600, 10); c.textAlign = 'right'; c.fillText(S.berserk >= 1 ? 'BERSERK READY' : 'BERSERK', right, top + 28);
+  if (S.combo >= 2) {
+    const cy = top + (has('fire') ? 70 : 48), cm = comboMul(S.combo);
+    c.fillStyle = cm > 1 ? '#ffd27a' : '#f4e7cf'; c.font = hudFont(700, 16); c.textAlign = 'right'; c.fillText(`${S.combo} COMBO${cm > 1 ? ' ×' + cm : ''}`, right, cy);
+    c.fillStyle = 'rgba(244,231,207,.15)'; c.fillRect(right - mw, cy + 20, mw, 3); c.fillStyle = '#ffd27a'; c.fillRect(right - mw, cy + 20, mw * clamp(S.comboT / 4, 0, 1), 3);
+  }
   if (has('fire')) { c.fillStyle = 'rgba(244,231,207,.15)'; c.fillRect(right - mw, top + 44, mw, 4);
   c.fillStyle = S.fireLock ? '#7a4a3a' : '#ff6a3c'; c.fillRect(right - mw, top + 44, mw * S.fire, 4);
   c.fillStyle = S.fireLock ? '#ff6a3c' : '#b5a68d'; c.fillText(S.fireLock ? 'OVERHEATED' : 'FIRE', right, top + 52); }
@@ -2577,12 +2990,21 @@ function drawHUD(dt) {
   c.strokeStyle = `rgba(255,93,125,${0.55 + 0.35 * Math.sin(S.t * 6)})`; c.lineWidth = 1.5;
   const dia = s => { c.beginPath(); c.moveTo(scr.x, scr.y - s); c.lineTo(scr.x + s, scr.y); c.lineTo(scr.x, scr.y + s); c.lineTo(scr.x - s, scr.y); c.closePath(); c.stroke(); };
   for (const e of S.enemies) {
-    if (!e.alive || e.hidden || e.lockCount > 0 || !['gunner', 'core', 'ccore', 'weak', 'aegis', 'mirror', 'iheart', 'ihead', 'eye', 'fist', 'chest', 'pod', 'ecore'].includes(e.kind)) continue;
+    if (!e.alive || e.hidden || e.lockCount > 0 || !['gunner', 'core', 'ccore', 'weak', 'aegis', 'mirror', 'iheart', 'ihead', 'eye', 'fist', 'chest', 'pod', 'ecore', 'diver', 'bomber', 'linker', 'sniper', 'brute', 'burrower', 'salamander'].includes(e.kind)) continue;
     if ((e.shielded && e.kind !== 'aegis') || !toScreen(e.mesh.getWorldPosition(tmpV), scr) || scr.d > 900) continue;
     const s = Math.max(12, e.r * scr.ppu) + 8;
     if (e.kind === 'mirror') { c.save(); c.strokeStyle = '#e8f4ff'; dia(s); c.fillStyle = '#e8f4ff'; c.font = hudFont(700, 10); c.textAlign = 'center'; c.fillText('LV2', scr.x, scr.y + s + 4); c.restore(); }
     else if (e.shielded) { c.save(); c.strokeStyle = 'rgba(181,166,141,.8)'; c.setLineDash([3, 3]); dia(s); c.setLineDash([]); c.fillStyle = '#b5a68d'; c.font = hudFont(700, 10); c.textAlign = 'center'; c.fillText('TURN', scr.x, scr.y + s + 4); c.restore(); }
     else dia(s);
+  }
+  // divers and snipers draw their aim at you; linkers show their tethers; elites wear their trait
+  const dragonScr = toScreen(D.mouthWorld(new V3()), scr) ? { x: scr.x, y: scr.y } : null;
+  for (const e of S.enemies) {
+    if (!e.alive || !toScreen(e.mesh.getWorldPosition(tmpV), scr) || scr.d > 900) continue;
+    const ex = scr.x, ey = scr.y;
+    if (e.aimLine > 0 && dragonScr) { c.save(); c.strokeStyle = `rgba(255,70,70,${0.25 + 0.6 * e.aimLine})`; c.lineWidth = 1 + 2.5 * e.aimLine; c.setLineDash(e.kind === 'sniper' ? [] : [8, 6]); c.beginPath(); c.moveTo(ex, ey); c.lineTo(dragonScr.x, dragonScr.y); c.stroke(); c.restore(); }
+    if (e.kind === 'linker') { c.save(); c.strokeStyle = 'rgba(93,255,176,.55)'; c.lineWidth = 1.5; for (const l of e.linked) if (l.alive && toScreen(l.mesh.getWorldPosition(tmpV2), scr)) { c.beginPath(); c.moveTo(ex, ey); c.lineTo(scr.x, scr.y); c.stroke(); } c.restore(); }
+    if (e.elite && !e.hidden) { c.save(); c.fillStyle = '#ffd27a'; c.font = hudFont(700, 10); c.textAlign = 'center'; c.fillText('★ ' + e.elite.toUpperCase(), ex, ey - Math.max(14, e.r * (e.mesh.scale.x / 2.4) * 2) - 10); c.restore(); }
   }
   // shots about to land from a direction you are not facing
   const inc = [0, 0, 0, 0];
@@ -2666,6 +3088,7 @@ function showOverlay(kind) {
       det.append(b, ' ', S.lastHit.note === 'mirror' ? 'Charge to LV2 before you strike a Mirror Wisp.' : S.lastHit.rel ? 'The red screen edge and the beeps warn you; turn to face that side and lock onto the shot.' : 'Pink orbs are targets too: sweep across them before they land.');
     } else { b.textContent = `Shot down ${Math.round(r.pct * 100)}% of enemies, took ${S.hits} hit${S.hits === 1 ? '' : 's'}.`; det.append(b); }
     det.append(` High score ${best.toLocaleString()}.`);
+    if (S.bestCombo) det.append(` Best combo ${S.bestCombo}.`);
     if (S.earned) det.append(` Earned ◆ ${S.earned} ember${S.earned === 1 ? '' : 's'}.`);
   }
   $('share-row').hidden = kind === 'title'; $('copybox').hidden = true;
@@ -2792,6 +3215,17 @@ const BEASTS = [
   { k: 'ihead',    name: 'Leviathan Skull', lore: 'Unguarded once every frost heart is shattered.' },
   { k: 'fist',     name: 'Colossus Fist',   lore: 'Each slam rains meteors. Break both and the Colossus dives.' },
   { k: 'eye',      name: 'Colossus Eye',    lore: 'Molten eyes that spit fire between slams.' },
+  { k: 'diver',    name: 'Diver',           lore: 'Aims along a red line, then dives. Lock it before it lands.' },
+  { k: 'phantom',  name: 'Phantom',         lore: 'Flickers out of sight; lockable only while visible. Wind Wraiths in the Frost Sea.' },
+  { k: 'bomber',   name: 'Bomber',          lore: 'Lays a trail of slow mines across your path.' },
+  { k: 'linker',   name: 'Linker',          lore: 'Its tethered flock cannot be locked until it falls.' },
+  { k: 'sniper',   name: 'Sniper',          lore: 'Charges a long beam from far away. Kill it mid-charge.' },
+  { k: 'brute',    name: 'Brute',           lore: 'An armoured gunship built to soak a whole volley.' },
+  { k: 'wasp',     name: 'Sand Wasp',       lore: 'Fast zig-zag swarmers of the Dusk Wastes.' },
+  { k: 'burrower', name: 'Burrower',        lore: 'A desert turret that rises from the sand to fire upward.' },
+  { k: 'crystal',  name: 'Ice Crystal',     lore: 'Floats over the Frost Sea and shatters into shards.' },
+  { k: 'bat',      name: 'Magma Bat',       lore: 'Drops a burning ember when it dies.' },
+  { k: 'salamander', name: 'Salamander',    lore: 'Crawls the Ember Rift’s lava and spits fire upward.' },
   { k: 'pod',      name: 'Carrier Pod',     lore: 'Four pods shield a Brood Carrier’s core and pour out drones.' },
   { k: 'ecore',    name: 'Carrier Core',    lore: 'Break it and the Carrier bursts into a cloud of shards.' },
   { k: 'chest',    name: 'Colossus Heart',  lore: 'The core of the Molten Colossus, shielded until its fists and eyes fall.' },
@@ -2981,11 +3415,13 @@ function renderTab() {
     }
   }
 }
+document.querySelectorAll('#diffs button').forEach(b => b.addEventListener('click', () => { M.diff = b.dataset.diff; saveMeta(); renderForms(); initAudio(); sfx.ui(); }));
 function renderForms() {
+  document.querySelectorAll('#diffs button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.diff === (M.diff || 'normal'))));
   document.querySelectorAll('#forms button').forEach(b => {
     const f = b.dataset.form, locked = f === 'void' && !owns('form:void');
     b.setAttribute('aria-checked', String(f === formName)); b.classList.toggle('locked', locked);
-    if (f === 'void') b.querySelector('span').textContent = locked ? '◆ 60 in the Aerie' : '7–13 locks · 4 hearts';
+    if (f === 'void') b.querySelector('span').textContent = locked ? '◆ 60 in the Aerie' : '7 locks, grows · 4 hearts';
   });
   $('opt-pattern').textContent = `Pattern: ${M.pattern[0].toUpperCase() + M.pattern.slice(1)}`;
 }
@@ -3033,7 +3469,11 @@ function frame(now) {
     const speedT = S.worm || S.elite ? 30 : S.boss && !S.boss.dead ? 14 : phase === 'clear' ? 40 : 70;
     S.speed = lerp(S.speed, speedT, Math.min(1, dt * 0.8));
     S.d = Math.min(RAIL_LEN - 60, S.d + S.speed * dt);
-    while (phase === 'play' && S.si < SCRIPT.length && S.d >= SCRIPT[S.si][0] && !(SCRIPT[S.si][2] === 'gate' && (S.worm || S.elite))) SCRIPT[S.si++][1]();
+    while (phase === 'play' && S.si < SCRIPT.length && S.d >= SCRIPT[S.si][0]) SCRIPT[S.si++][1]();
+    if (S.mode !== 'rush') director(dt);
+    S.cleanT += dt; S.recentHits = Math.max(0, S.recentHits - dt / 12);
+    if (S.comboT > 0) { S.comboT -= dt; if (S.comboT <= 0) comboBreak(); }
+    if (S.route === 'storm' && phase === 'play') { S.boltT = (S.boltT ?? 5) - dt; if (S.boltT <= 0) { S.boltT = rnd(5, 10); S.flash = 0.35; sfx.boom(1.3); world.sun.intensity += 1.5; } }
     for (const tm of S.timers) if (S.t >= tm.at) { tm.fn(); tm.done = true; }
     S.timers = S.timers.filter(tm => !tm.done);
     placeRig(S.d, dt);
@@ -3053,7 +3493,7 @@ function frame(now) {
     S.evolveT = Math.max(0, S.evolveT - dt); S.jaw = Math.max(0, S.jaw - dt * 3); if (S.evolveT > 1.45) cocoon();
     // charge builds while you hold a lock
     if (phase === 'play' && ptr.down && S.locks.length) {
-      const maxC = has('over') ? 5 : 3, prev = Math.floor(S.charge);
+      const maxC = has('hydra') ? 0 : has('over') ? 5 : 3, prev = Math.floor(S.charge);
       S.charge = Math.min(maxC, S.charge + dt / 0.75 * (has('swift') ? 1.5 : 1));
       if (Math.floor(S.charge) > prev) { sfx.charge(Math.floor(S.charge)); buzz(12); }
     } else if (!ptr.down) S.charge = 0;
@@ -3077,6 +3517,9 @@ function frame(now) {
     for (const e of S.enemies) {
       if (!e.alive) continue;
       e.age += dt;
+      if (!e._ec) { e._ec = 1; maybeElite(e); }
+      if (e.tether && !e.tether.alive) { e.shielded = false; e.tether = null; }
+      if (e.halo) e.halo.rotation.z += dt * 3;
       if (e.upd) e.upd(e, dt);
       // flyers never pass through rock: they climb over it, then ease back down
       if (e.upd && !e.attached && e.kind !== 'bullet') {
@@ -3135,7 +3578,7 @@ function start(data) {
   try { const m = localStorage.getItem('skylance.mode'); if (m && MODE_LABEL[m]) setMode(m, false); } catch {}
   D.group.traverse(o => { if (o.isMesh) o.castShadow = true; });
   buildComposer(); setupShadows(); resize(); newGame(true); showOverlay('title');
-  if (location.hash === '#debug') window.__sky = { get S() { return S; }, get phase() { return phase; }, shotLog, turn, triggerBerserk, evolve, offerMutations, pickMutation, burnCone, applyLook, D, Music, get AC() { return AC; }, sfx, spawnCarrier, stampede, M, renderTab, renderer, world, rockTex, aegis, splitter, mirror, nextStage, setMode, get BOSS_D() { return BOSS_D; }, get WORM_D() { return WORM_D; }, get ST() { return ST; }, jump(d) { S.d = d; while (S.si < SCRIPT.length && SCRIPT[S.si][0] < d - 50) S.si++; } };
+  if (location.hash === '#debug') window.__sky = { get S() { return S; }, get phase() { return phase; }, shotLog, turn, triggerBerserk, evolve, offerMutations, pickMutation, burnCone, applyLook, D, Music, get AC() { return AC; }, sfx, fire, targets, damage, diver, phantom, bomber, linker, sniper, brute, wasps, groundGun, crystals, bats, maybeElite, spawnCarrier, stampede, M, renderTab, renderer, world, rockTex, aegis, splitter, mirror, nextStage, setMode, get BOSS_D() { return BOSS_D; }, get WORM_D() { return WORM_D; }, get ST() { return ST; }, jump(d) { S.d = d; while (S.si < SCRIPT.length && SCRIPT[S.si][0] < d - 50) S.si++; } };
   requestAnimationFrame(t => { lastT = t; frame(t); });
 }
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
