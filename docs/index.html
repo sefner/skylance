@@ -73,13 +73,25 @@ h1{margin:0;font-family:var(--font-display);font-weight:400;font-size:clamp(2.4r
 .tabs{display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid rgba(181,166,141,.25);padding-bottom:6px}
 .tabs button{font:600 12px var(--font-ui);letter-spacing:.06em;color:var(--muted);background:transparent;border:0;border-bottom:2px solid transparent;padding:6px 7px;cursor:pointer}
 .tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ember)}
-.panel{display:grid;gap:6px;max-height:42vh;overflow:auto;overscroll-behavior:contain}
+.panel{display:grid;gap:6px;max-height:56vh;overflow:auto;overscroll-behavior:contain}
 .row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:9px 10px;background:rgba(244,231,207,.04);border:1px solid rgba(181,166,141,.18)}
 .row div{min-width:0}
 .row h3{margin:0 0 2px;font:400 15px var(--font-display);letter-spacing:.03em;color:var(--ink)}
 .row p{margin:0;font-size:12px;line-height:1.4;color:var(--muted)}
 .note{margin:0;font-size:12px;line-height:1.45;color:var(--muted)}
 .chip:disabled{opacity:.45;cursor:default}
+.wide{width:100%;padding:11px}
+.menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.menu button{font:600 13px var(--font-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);background:rgba(244,231,207,.05);border:1px solid rgba(181,166,141,.3);padding:11px 8px;cursor:pointer}
+.menu button:active{background:rgba(255,179,71,.14)}
+#ov-main,.shbody,#sheet{display:grid;gap:12px}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.sheet-head .purse{margin:0}
+.sec{margin:2px 0 0;font:400 16px var(--font-display);letter-spacing:.04em;color:var(--ink)}
+.panel details{border:1px solid rgba(181,166,141,.2);padding:8px 10px}
+.panel summary{cursor:pointer;font:400 16px var(--font-display);color:var(--ink)}
+.panel details[open] summary{margin-bottom:8px}
+#pause{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:calc(50% + 34px);width:34px;height:34px;font:700 13px var(--font-ui);color:var(--ink);background:rgba(9,22,27,.45);border:1px solid rgba(181,166,141,.35);cursor:pointer;touch-action:manipulation}
 .credits{margin-top:10px}
 .chip .sw{display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:-1px;border:1px solid rgba(244,231,207,.4)}
 .row label{display:block;font:400 15px var(--font-display);color:var(--ink);margin-bottom:6px}
@@ -121,6 +133,7 @@ button:focus-visible{outline:2px solid var(--lance);outline-offset:3px}
 <button class="turn" id="turn-l" aria-label="Turn view left" hidden>◀</button>
 <button class="turn" id="turn-r" aria-label="Turn view right" hidden>▶</button>
 <button id="berserk" hidden>Berserk</button>
+<button id="pause" hidden aria-label="Pause">II</button>
 <button id="breath" hidden aria-label="Breathe fire (hold)">Fire</button>
 <div id="mutate" hidden>
   <div class="mcard">
@@ -132,69 +145,65 @@ button:focus-visible{outline:2px solid var(--lance);outline-offset:3px}
 
 <div id="overlay">
   <div class="card">
-    <p class="kicker" id="ov-kicker">Prototype v2 · Stage 1 · The Dusk Wastes</p>
+    <p class="kicker" id="ov-kicker"></p>
     <h1 id="ov-title">Skylance</h1>
-    <p class="lede" id="ov-lede">An on-rails dragon shooter built around one gesture.</p>
-    <p class="purse" id="purse"></p>
+    <div id="ov-main">
+      <p class="lede" id="ov-lede"></p>
     <dl class="stats" id="ov-stats" hidden>
       <div><dt>Score</dt><dd id="st-score">0</dd></div>
       <div><dt>Rank</dt><dd id="st-rank">–</dd></div>
       <div><dt>Best chain</dt><dd id="st-chain">0</dd></div>
     </dl>
-    <p class="detail" id="ov-detail" hidden></p>
-    <div class="opts" id="share-row" hidden><button class="chip" id="share" type="button">Copy result</button><input class="copybox" id="copybox" readonly hidden aria-label="Result to copy"></div>
-    <nav class="tabs" id="tabs" role="tablist" aria-label="Sections">
-      <button role="tab" aria-selected="true" data-tab="fly">Fly</button>
-      <button role="tab" aria-selected="false" data-tab="lair">Lair</button>
-      <button role="tab" aria-selected="false" data-tab="aerie">Aerie</button>
-      <button role="tab" aria-selected="false" data-tab="pact">Pacts</button>
-      <button role="tab" aria-selected="false" data-tab="beasts">Bestiary</button>
-      <button role="tab" aria-selected="false" data-tab="feats">Feats</button>
-      <button role="tab" aria-selected="false" data-tab="board">Board</button>
-      <button role="tab" aria-selected="false" data-tab="log">Log</button>
-    </nav>
-    <div id="tab-fly">
-    <details class="how" id="ov-how"><summary>How to play</summary>
-    <ol class="steps">
-      <li><span class="n">1</span><span><b>Hold and drag</b> across enemies and incoming shots to lock on. Tough targets take a second pass.</span></li>
-      <li><span class="n">2</span><span><b>Release</b> to loose homing lances. Each kill scores × the locks in that volley.</span></li>
-      <li><span class="n">3</span><span><b>Turn</b> with ◀ ▶ or a two-finger swipe when the radar shows threats beside or behind you.</span></li>
-      <li><span class="n">4</span><span><b>Berserk</b> when the gold meter fills: every target in range, all at once.</span></li>
-      <li><span class="n">5</span><span><b>Charge</b>: keep holding after you lock on. Each level adds lance damage, but enemies keep firing while you wait.</span></li>
-      <li><span class="n">6</span><span><b>Colours</b>: a volley that kills three or more of one eye colour pays double.</span></li>
-      <li><span class="n">9</span><span><b>Combo</b>: keep killing without a 4-second pause or taking a hit. At 12, 30 and 60 kills your score multiplier climbs to ×1.5, ×2 and ×3. Each stage also sets two bonus objectives that pay embers.</span></li>
-      <li><span class="n">10</span><span><b>Routes</b>: between stages, choose your path. High Storm is harder and pays far more.</span></li>
-      <li><span class="n">8</span><span><b>Dragonfire</b>: a mutation you can earn. It adds a Fire button that pours flame where you aim, burning enemies and their shots.</span></li>
-      <li><span class="n">7</span><span><b>Grow</b>: kills level up your dragon, and every level brings a perk. It evolves into a Drake at level 5, a Wyrm at 12 and an Elder at 20. The stronger it gets, the bigger the waves.</span></li>
-    </ol>
-    <p class="note credits">Music (CC0, via OpenGameArt): “A Legend Will Rise” by CodeManu, “Determined Pursuit” and “Orchestral Battle Theme” by Emma_MA, “Siberian Intro” by Vehicle, “Epic Boss Battle” by Juhani Junkala, “The Fire Dragon” by Umplix.</p></details>
+      <p class="detail" id="ov-detail" hidden></p>
+      <div class="opts" id="share-row" hidden><button class="chip" id="share" type="button">Copy result</button><input class="copybox" id="copybox" readonly hidden aria-label="Result to copy"></div>
+      <button class="primary" id="start">Take off</button>
+      <button class="chip wide" id="cont" type="button" hidden>Continue</button>
+      <button class="chip wide" id="quit" type="button" hidden>Quit to title</button>
+      <nav class="menu" id="menu" aria-label="Menu">
+        <button type="button" data-sheet="modes" id="m-modes">Modes</button>
+        <button type="button" data-sheet="dragon" id="m-dragon">Dragon</button>
+        <button type="button" data-sheet="records" id="m-records">Records</button>
+        <button type="button" data-sheet="settings" id="m-settings">Settings</button>
+      </nav>
+    </div>
+    <div id="sheet" hidden>
+      <div class="sheet-head"><button class="chip" id="sheet-back" type="button">‹ Back</button><p class="purse" id="purse"></p></div>
+      <div class="shbody" id="sh-modes" hidden>
+        <h3 class="sec">Mode</h3>
     <div class="forms" id="modes" role="radiogroup" aria-label="Mode">
       <button role="radio" aria-checked="true" data-mode="story"><b>Story</b><span>3 stages, 3 lands</span></button>
       <button role="radio" aria-checked="false" data-mode="daily"><b>Daily</b><span>Today's seed</span></button>
       <button role="radio" aria-checked="false" data-mode="endless"><b>Endless</b><span>How far?</span></button>
       <button role="radio" aria-checked="false" data-mode="rush"><b>Boss Rush</b><span>Bosses only</span></button>
     </div>
+        <h3 class="sec">Difficulty</h3>
     <div class="forms" id="diffs" role="radiogroup" aria-label="Difficulty">
       <button role="radio" aria-checked="false" data-diff="calm"><b>Calm</b><span>+2 hearts</span></button>
       <button role="radio" aria-checked="true" data-diff="normal"><b>Normal</b><span>As intended</span></button>
       <button role="radio" aria-checked="false" data-diff="fierce"><b>Fierce</b><span>×1.3 score</span></button>
     </div>
+      </div>
+      <div class="shbody" id="sh-dragon" hidden>
+        <h3 class="sec">Form</h3>
     <div class="forms" id="forms" role="radiogroup" aria-label="Dragon form">
       <button role="radio" aria-checked="true" data-form="sky"><b>Skylance</b><span>6 locks, grows · 5 hearts</span></button>
       <button role="radio" aria-checked="false" data-form="storm"><b>Stormfang</b><span>8 locks, grows · 4 hearts</span></button>
       <button role="radio" aria-checked="false" data-form="bastion"><b>Bastion</b><span>4 locks, grows · 7 hearts</span></button>
       <button role="radio" aria-checked="false" data-form="void"><b>Voidwing</b><span>◆ 60 in the Aerie</span></button>
     </div>
-    <div class="opts">
-      <button class="chip" id="opt-offset" aria-pressed="true">Reticle above finger</button>
-      <button class="chip" id="opt-sound" aria-pressed="true">Sound</button>
-      <button class="chip" id="opt-music" aria-pressed="true">Music</button>
-      <button class="chip" id="opt-gfx" aria-pressed="true">High graphics</button>
-      <button class="chip" id="opt-pattern">Pattern: Natural</button>
+        <div class="opts"><button class="chip" id="opt-pattern" type="button">Pattern: Natural</button></div>
+      </div>
+      <div class="shbody" id="sh-settings" hidden>
+        <div class="opts">
+          <button class="chip" id="opt-offset" aria-pressed="true">Reticle above finger</button>
+          <button class="chip" id="opt-sound" aria-pressed="true">Sound</button>
+          <button class="chip" id="opt-music" aria-pressed="true">Music</button>
+          <button class="chip" id="opt-gfx" aria-pressed="true">High graphics</button>
+        </div>
+        <p class="note credits">Music (CC0, via OpenGameArt): “A Legend Will Rise” by CodeManu, “Determined Pursuit” and “Orchestral Battle Theme” by Emma_MA, “Siberian Intro” by Vehicle, “Epic Boss Battle” by Juhani Junkala, “The Fire Dragon” by Umplix.</p>
+      </div>
+      <div class="panel" id="tab-panel" hidden></div>
     </div>
-    </div>
-    <div class="panel" id="tab-panel" role="tabpanel" hidden></div>
-    <button class="primary" id="start">Take off</button>
   </div>
 </div>
 
@@ -2386,6 +2395,7 @@ function pickMutation(id) {
   $('turn-l').hidden = $('turn-r').hidden = false; $('breath').hidden = !has('fire');
   popup(m.name.toUpperCase(), W / 2, H * 0.3, true, '#86f2ff'); sfx.chime(); buzz(20);
   meta.onMutation?.(id);
+  if (S.mode === 'story' && M.save && M.save.stageNo === S.stageNo) { M.save.muts = [...S.muts]; M.save.lockBonus = S.lockBonus; M.save.maxHp = S.maxHp; saveMeta(); }
   if (id === 'fire') { $('breath').hidden = false; later(0.8, () => { S.hint = { text: 'Dragonfire: hold the Fire button to breathe flame where you aim.', until: S.t + 6 }; }); }
   later(0.3, checkEvolve);
 }
@@ -2495,6 +2505,7 @@ function nextStage(route) {
   S.flash = 1; S.hp = Math.min(S.maxHp, S.hp + 2);
   Music.mode = 'stage';
   S.stageHits = 0; S.objs = makeObjectives();
+  if (S.mode === 'story') { M.save = snapshotRun(); saveMeta(); }
   if (S.route === 'storm' || S.route === 'ruins') S.objs.push(...makeObjectives().filter(o => !S.objs.some(x => x.id === o.id)).slice(0, 1));
   if (S.route === 'storm') for (const o of S.objs) o.reward = Math.round(o.reward * 1.5);
   if (S.route) later(0.5, () => popup(ROUTES[S.route].name.toUpperCase(), W / 2, H * 0.36, false, '#86f2ff'));
@@ -2582,6 +2593,7 @@ const GOLD = [2.2, 1.9, 0.9];
 function lanceCol(dmg) { const b = D.form.lance; if (dmg >= 3) return GOLD; if (dmg === 2) return b.map((x, i) => (x + GOLD[i]) / 2); return b; }
 function fire(list, berserk = false) {
   if (!list.length) return;
+  S.volleys = (S.volleys || 0) + 1; if (!M.tut?.fire) { (M.tut ||= {}).fire = 1; saveMeta(); }
   S.jaw = 1;
   const lvl = berserk ? 0 : Math.floor(S.charge), dmg = 1 + lvl, col = lanceCol(dmg), spd = has('swift') ? 0.6 : 1;
   const v = newVolley(berserk ? 8 : list.length, berserk); v.pending = list.length;
@@ -2670,6 +2682,16 @@ function arcFrom(src, wp, v) {
     if (t.hp <= 0) kill(t, v, p, null);
   }
   if (n) sfx.storm();
+}
+// teach by doing: each prompt appears only until the player has done the thing once (remembered on this device)
+function nudge(text) { if (S.hint && S.hint.text === text) S.hint.until = S.t + 0.5; else if (!S.hint || S.hint.until - S.t < 0.4) S.hint = { text, until: S.t + 0.5 }; }
+function tutorial() {
+  if (phase !== 'play') return;
+  const T = (M.tut ||= {});
+  if (!T.lock) { if (S.locks.length) { T.lock = 1; saveMeta(); } else if (S.t > 1.5 && targets().length) nudge('Drag your finger across enemies to lock on.'); return; }
+  if (!T.fire) { if (S.locks.length && ptr.down) nudge('Now let go to fire!'); return; }
+  if (!T.charge && (S.volleys || 0) >= 6) { T.charge = 1; saveMeta(); S.hint = { text: 'Tip: keep holding after locking on to charge stronger lances.', until: S.t + 5 }; return; }
+  if (!T.berserk && S.berserk >= 1) nudge('Berserk is ready. Tap the gold BERSERK button!');
 }
 function stormBolts() {
   if (phase !== 'play') return;
@@ -2804,6 +2826,7 @@ function triggerBerserk() {
     for (let k = 0; k < n && list.length < (has('blood') ? 60 : 40); k++) { t.lockCount++; list.push(t); }
   }
   if (!list.length) { popup('NO TARGETS', W / 2, H * 0.3, true, '#b5a68d'); return; }
+  if (!M.tut?.berserk) { (M.tut ||= {}).berserk = 1; saveMeta(); }
   S.berserk = 0; S.roar = 1.6; S.locks.forEach(t => t.lockCount = Math.max(0, t.lockCount - 1)); S.locks = [];
   sfx.roar(); buzz([80, 40, 140]); slow(0.25, 0.5); S.shake = 0.6;
   later(0.25, () => fire(list, true));
@@ -2819,7 +2842,7 @@ hud.addEventListener('pointerdown', e => {
   e.preventDefault();
   try { hud.setPointerCapture(e.pointerId); } catch {}
   touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
-  if (touches.size === 2) { two = { x0: centroid().x, done: false }; ptr.down = false; return; }
+  if (touches.size >= 2) return; // one thumb: extra fingers are ignored
   if (touches.size > 2 || ptr.down) return;
   ptr.down = true; ptr.id = e.pointerId; ptr.touch = e.pointerType !== 'mouse';
   setRet(e); ptr.lx = ret.x; ptr.ly = ret.y; ptr.t0 = performance.now(); ret.shown = true;
@@ -2857,6 +2880,7 @@ function turn(dir) {
   if (phase !== 'play') return;
   viewIndex = (viewIndex + dir + 4) % 4; viewYawT -= dir * Math.PI / 2;
   S.turning = 0.45; S.taught = true; S.hint = null; sfx.turn(); buzz(10);
+  if (!M.tut?.turn) { (M.tut ||= {}).turn = 1; saveMeta(); }
 }
 $('turn-l').addEventListener('click', () => turn(-1));
 $('turn-r').addEventListener('click', () => turn(1));
@@ -2876,7 +2900,7 @@ addEventListener('keyup', e => { if (e.code === 'KeyF' && S) S.breathing = false
   for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) bb.addEventListener(ev, off);
   bb.addEventListener('contextmenu', e => e.preventDefault());
 }
-document.addEventListener('visibilitychange', () => { paused = document.hidden; lastT = performance.now(); if (AC) { if (document.hidden) AC.suspend?.(); else AC.resume?.(); } });
+document.addEventListener('visibilitychange', () => { if (document.hidden) pauseGame(); paused = document.hidden; lastT = performance.now(); if (AC) { if (document.hidden) AC.suspend?.(); else AC.resume?.(); } });
 
 // ======================= HUD =======================
 // a soft lens flare when the sun is on screen and not behind the terrain
@@ -2954,7 +2978,7 @@ function drawHUD(dt) {
   }
   c.textBaseline = 'top';
   // score + progress
-  c.fillStyle = '#b5a68d'; c.font = hudFont(600, 11); c.textAlign = 'left'; c.fillText(`SCORE · ${S.mode === 'daily' ? 'DAILY' : `STAGE ${S.stageNo + 1}${S.mode === 'story' ? '/3' : ''}`}`, left, top);
+  c.fillStyle = '#b5a68d'; c.font = hudFont(600, 11); c.textAlign = 'left'; c.fillText(S.mode === 'daily' ? 'DAILY' : `STAGE ${S.stageNo + 1}${S.mode === 'story' ? ' / 3' : ''}`, left, top);
   c.fillStyle = '#f4e7cf'; c.font = hudFont(700, 24); c.fillText(S.score.toLocaleString(), left, top + 13);
   const bw = Math.min(150, W * 0.3);
   c.fillStyle = 'rgba(244,231,207,.15)'; c.fillRect(left, top + 44, bw, 3);
@@ -2966,9 +2990,8 @@ function drawHUD(dt) {
     c.fillStyle = '#86f2ff'; c.font = hudFont(600, 10); c.textAlign = 'left'; c.fillText(`LV ${S.lvl} · ` + (dragonName() ? dragonName().toUpperCase() + ' · ' : '') + STAGES[S.stage].name.toUpperCase(), left, top + 64, W * 0.5);
     c.fillStyle = 'rgba(244,231,207,.15)'; c.fillRect(left, top + 78, bw, 3); c.fillStyle = '#86f2ff'; c.fillRect(left, top + 78, bw * xf, 3);
     c.font = hudFont(600, 10); c.textAlign = 'left';
-    (S.objs || []).forEach((o, i) => { c.fillStyle = o.done ? '#ffd27a' : 'rgba(244,231,207,.75)'; c.fillText(`${o.done ? '✓' : '◇'} ${o.text} ${o.done ? '' : `${Math.min(o.prog, o.goal)}/${o.goal}`}`, left, top + 108 + i * 14, W * 0.55); });
-    let mx = left; c.font = hudFont(700, 9); c.textAlign = 'center';
-    for (const id of S.muts) { const m = MUTS.find(x => x.id === id); if (!m) continue; c.fillStyle = 'rgba(134,242,255,.18)'; c.fillRect(mx, top + 88, 20, 14); c.fillStyle = '#86f2ff'; c.fillText(m.g, mx + 10, top + 90); mx += 23; }
+    const ob = (S.objs || []).find(o => !o.done);
+    if (ob) { c.fillStyle = 'rgba(244,231,207,.75)'; c.fillText(`◇ ${ob.text} ${Math.min(ob.prog, ob.goal)}/${ob.goal}`, left, top + 90, W * 0.55); }
     c.textAlign = 'left'; }
   // hearts + berserk meter
   for (let i = 0; i < S.maxHp; i++) {
@@ -2979,7 +3002,7 @@ function drawHUD(dt) {
   const mw = Math.min(110, W * 0.26);
   c.fillStyle = 'rgba(244,231,207,.15)'; c.fillRect(right - mw, top + 20, mw, 4);
   c.fillStyle = S.berserk >= 1 ? `rgba(255,179,71,${0.6 + 0.4 * Math.sin(S.t * 8)})` : '#c98a3a'; c.fillRect(right - mw, top + 20, mw * S.berserk, 4);
-  c.fillStyle = '#b5a68d'; c.font = hudFont(600, 10); c.textAlign = 'right'; c.fillText(S.berserk >= 1 ? 'BERSERK READY' : 'BERSERK', right, top + 28);
+  c.fillStyle = '#b5a68d'; c.font = hudFont(600, 10); c.textAlign = 'right'; if (S.berserk >= 1) c.fillText('BERSERK READY', right, top + 28);
   if (S.combo >= 2) {
     const cy = top + (has('fire') ? 70 : 48), cm = comboMul(S.combo);
     c.fillStyle = cm > 1 ? '#ffd27a' : '#f4e7cf'; c.font = hudFont(700, 16); c.textAlign = 'right'; c.fillText(`${S.combo} COMBO${cm > 1 ? ' ×' + cm : ''}`, right, cy);
@@ -3049,7 +3072,8 @@ function drawHUD(dt) {
   if (inc[2]) { const g = c.createLinearGradient(0, H, 0, H - 90); g.addColorStop(0, `rgba(255,93,125,${0.25 + 0.35 * inc[2]})`); g.addColorStop(1, 'rgba(255,93,125,0)'); c.fillStyle = g; c.fillRect(0, H - 90, W, 90);
     c.fillStyle = '#ff5d7d'; c.font = hudFont(700, 12); c.textAlign = 'center'; c.fillText('INCOMING FROM BEHIND', W / 2, H - Math.max(48, safe.b + 44)); }
   if (warnB) { c.font = hudFont(700, 11); c.textAlign = 'center'; c.fillText('▼ BEHIND ▼', rx, ry + rr + 8); }
-  if ((warnR || warnL || warnB) && !S.taught && !S.hint) S.hint = { text: warnR ? 'Threat to your right. Tap ▶ or swipe with two fingers.' : warnL ? 'Threat to your left. Tap ◀ or swipe with two fingers.' : 'Threat behind you. Turn twice with ▶ or ◀.', until: S.t + 5 };
+  if ((warnR || warnL || warnB) && !S.taught && !M.tut?.turn && !S.hint) S.hint = { text: warnR ? 'Threat to your right. Tap ▶ to turn.' : warnL ? 'Threat to your left. Tap ◀ to turn.' : 'Threat behind you. Tap ▶ twice.', until: S.t + 5 };
+  if (S.hint && phase !== 'play') S.hint = null;
   if (S.hint) {
     if (S.t > S.hint.until) S.hint = null;
     else { c.font = hudFont(600, 13); c.textAlign = 'center'; c.fillStyle = 'rgba(9,22,27,.7)'; const tw = Math.min(W - 32, c.measureText(S.hint.text).width + 20); c.fillRect(W / 2 - tw / 2, H * 0.62, tw, 26); c.fillStyle = '#f4e7cf'; c.fillText(S.hint.text, W / 2, H * 0.62 + 6, W - 40); }
@@ -3120,38 +3144,72 @@ function showOverlay(kind) {
     if (S.bestCombo) det.append(` Best combo ${S.bestCombo}.`);
     if (S.earned) det.append(` Earned ◆ ${S.earned} ember${S.earned === 1 ? '' : 's'}.`);
   }
-  $('share-row').hidden = kind === 'title'; $('copybox').hidden = true;
-  renderTab();
-  $('ov-kicker').textContent = kind === 'title' ? `${MODE_LABEL[mode]} · ${ST.B.name}` : won ? `${MODE_LABEL[S.mode]} complete` : `${MODE_LABEL[S.mode]} · stage ${S.stageNo + 1} · ${ST.B.name}`;
+  $('share-row').hidden = kind === 'title' || kind === 'pause'; $('copybox').hidden = true;
+  if (kind === 'pause') det.hidden = true;
+  tab = 'main'; renderTab();
+  const save = mode === 'story' && kind !== 'pause' ? M.save : null;
+  $('cont').hidden = !save; if (save) $('cont').textContent = `Continue · stage ${save.stageNo + 1} · LV ${save.lvl}`;
+  $('quit').hidden = kind !== 'pause';
+  $('ov-kicker').textContent = kind === 'pause' ? `Paused · ${MODE_LABEL[S.mode]} · stage ${S.stageNo + 1}` : kind === 'title' ? `${MODE_LABEL[mode]} · ${ST.B.name}` : won ? `${MODE_LABEL[S.mode]} complete` : `${MODE_LABEL[S.mode]} · stage ${S.stageNo + 1} · ${ST.B.name}`;
   $('ov-title').textContent = won ? (S.mode === 'story' ? 'Skies reclaimed' : 'Flight complete') : kind === 'over' ? 'Fallen' : 'Skylance';
   $('ov-lede').textContent = won ? (S.mode === 'story' ? 'All three Guardians have fallen. Try again for an S rank, or ride Endless to see how far you can go.' : 'Today\'s flight is done. A new seed arrives tomorrow.')
     : kind === 'over' ? (S.mode === 'endless' ? `You reached stage ${S.stageNo + 1}.` : 'Every run reshapes your dragon. Try a different set of mutations.')
-    : 'Lock on with one gesture, then let the lances fly. Your dragon hatches small and grows into an Elder as it fights.';
-  $('ov-how').hidden = kind !== 'title';
-  $('ov-stats').hidden = kind === 'title';
+    : kind === 'pause' ? `LV ${S.lvl} ${STAGES[S.stage].name} · ${S.score.toLocaleString()} points.`
+    : (M.runs || 0) ? 'Drag across enemies to lock on. Let go to fire.' : 'Drag your finger across enemies to lock on, then let go to fire.';
+  $('ov-stats').hidden = kind === 'title' || kind === 'pause';
   if (S && kind !== 'title') { $('st-score').textContent = S.score.toLocaleString(); $('st-chain').textContent = S.bestChain; }
-  $('start').textContent = kind === 'title' ? 'Take off' : 'Fly again';
+  $('start').textContent = kind === 'pause' ? 'Resume' : kind === 'title' ? (save ? 'New run' : 'Take off') : 'Fly again';
   overlay.hidden = false;
-  for (const id of ['turn-l', 'turn-r', 'berserk', 'breath']) $(id).hidden = true;
+  for (const id of ['turn-l', 'turn-r', 'berserk', 'breath', 'pause']) $(id).hidden = true;
 }
 function endRun(kind) {
+  if (S.mode === 'story') { delete M.save; saveMeta(); }
   if (S.score > best) { best = S.score; try { localStorage.setItem('skylance.best', String(best)); } catch {} }
   const run = saveRun(kind); meta.onRunEnd?.(run);
   phase = kind; S.locks = []; ptr.down = false; touches.clear(); two = null;
   Music.mode = 'title';
   showOverlay(kind);
 }
+function launch() {
+  phase = 'play'; overlay.hidden = true; ret.shown = false;
+  $('turn-l').hidden = $('turn-r').hidden = $('pause').hidden = false; $('breath').hidden = !has('fire');
+  Music.mode = S.boss ? 'boss' : 'stage';
+}
 $('start').addEventListener('click', () => {
+  if (phase === 'paused') { launch(); return; }
   if (formName === 'void' && !owns('form:void')) { formName = 'sky'; applyLook(); }
-  initAudio(); newGame(true); phase = 'play'; overlay.hidden = true; ret.shown = false;
+  if (mode === 'story') { delete M.save; saveMeta(); }
+  initAudio(); newGame(true); launch();
   if (S.eggPick) later(1.8, () => offerMutations(mode === 'rush' ? 'Boss Rush' : 'Drake Egg'));
   popup(`${MODE_LABEL[mode].toUpperCase()} · ${ST.B.name.toUpperCase()}`, W / 2, H * 0.3, true, '#ffb347');
-  $('turn-l').hidden = $('turn-r').hidden = false; $('breath').hidden = !has('fire');
-  Music.mode = 'stage';
   try { localStorage.setItem('skylance.form', formName); } catch {}
 });
+// story checkpoints: each stage is a short session; continue from the start of the stage you reached
+function snapshotRun() {
+  const k = ['stageNo', 'route', 'lvl', 'xp', 'stage', 'lockBonus', 'power', 'lanceSpd', 'reach', 'rage', 'cool', 'maxHp', 'hp', 'score', 'ascN', 'berserk', 'bestChain', 'hits', 'killN', 'spawnN', 'bestCombo'];
+  const o = { muts: [...S.muts], form: formName, wave: S.dir.wave }; for (const x of k) o[x] = S[x]; return o;
+}
+function resumeRun(sv) {
+  setMode('story', false);
+  if (sv.form && FORMS[sv.form]) { formName = sv.form; applyLook(); }
+  initAudio(); newGame(false);
+  buildStage({ ...stageDef(sv.stageNo), route: sv.route });
+  const { muts, form, wave, ...rest } = sv; Object.assign(S, rest, { eggPick: false });
+  S.muts = new Set(muts); D.setMuts(S.muts); D.setStage(S.stage); S.maxL = locksFor(S.stage); S.dir.wave = wave || 0; S.objs = makeObjectives();
+  launch();
+  popup(`STAGE ${S.stageNo + 1} · ${ST.B.name.toUpperCase()}`, W / 2, H * 0.3, true, '#ffb347');
+}
+$('cont').addEventListener('click', () => { if (M.save) resumeRun(M.save); });
+function pauseGame() {
+  if (phase !== 'play') return;
+  phase = 'paused'; ptr.down = false; touches.clear(); S.breathing = false; sfx.fireStop();
+  for (const t of S.locks) t.lockCount = Math.max(0, t.lockCount - 1); S.locks = []; S.charge = 0;
+  showOverlay('pause');
+}
+$('pause').addEventListener('click', pauseGame);
+$('quit').addEventListener('click', () => { newGame(true); phase = 'title'; Music.mode = 'title'; showOverlay('title'); });
 document.querySelectorAll('#forms button').forEach(b => b.addEventListener('click', () => {
-  if (b.dataset.form === 'void' && !owns('form:void')) { tab = 'aerie'; renderTab(); return; }
+  if (b.dataset.form === 'void' && !owns('form:void')) { tab = 'dragon'; renderTab(); return; }
   formName = b.dataset.form; applyLook(); renderForms();
   document.querySelectorAll('#forms button').forEach(x => x.setAttribute('aria-checked', String(x === b)));
   initAudio(); sfx.ui();
@@ -3225,7 +3283,7 @@ const PACTS = [
   { id: 'brittle', name: 'Brittle Scales', d: 'Evolving no longer restores your hearts.', bonus: 0.2 },
   { id: 'thin',    name: 'Thin Sky',       d: 'Start every run with at most 3 hearts.', bonus: 0.3 },
 ];
-const pactOn = id => !!M.pact[id];
+const pactOn = () => false; // pacts were cut to keep the phone game simple
 const pactMul = () => 1 + PACTS.reduce((a, p) => a + (pactOn(p.id) ? p.bonus : 0), 0);
 const pactCount = () => PACTS.filter(p => pactOn(p.id)).length;
 const BEASTS = [
@@ -3276,7 +3334,6 @@ const FEATS = [
   { id: 'rankS',     name: 'S rank',          d: 'Finish a run with an S rank.', r: 30 },
   { id: 'daily',     name: 'Daily flyer',     d: 'Finish a Daily flight.', r: 10 },
   { id: 'rush3',     name: 'Gauntlet',        d: 'Defeat three bosses in one Boss Rush.', r: 40 },
-  { id: 'pact3',     name: 'Oathbound',       d: 'Clear a stage with three or more pacts.', r: 30 },
 ];
 function feat(id) {
   if (M.feats[id]) return; const f = FEATS.find(x => x.id === id); if (!f) return;
@@ -3304,6 +3361,7 @@ Object.assign(meta, {
     if (S.mode === 'rush' && i + 1 >= 3) feat('rush3');
   },
   onRunEnd(run) {
+    M.runs = (M.runs || 0) + 1;
     const earned = Math.max(1, Math.round((S.score / 2500 + S.killN / 8 + S.stageNo * 5 + (run.result === 'clear' ? 10 : 0)) * (0.5 + 0.5 * pactMul())));
     M.embers += earned; S.earned = earned;
     feat('first');
@@ -3327,7 +3385,7 @@ const LB = { db: null, user: null, uid: null, rows: [], ready: false };
     if (!db || !user) return;
     const uid = await user.id(); if (!uid) return;
     Object.assign(LB, { db, user, uid, ready: true });
-    db.collection('scores').onSnapshot(snap => { LB.rows = snap.docs.map(d => ({ id: d.id, ...d.data() })); if (tab === 'board') renderTab(); }, () => { LB.ready = false; });
+    db.collection('scores').onSnapshot(snap => { LB.rows = snap.docs.map(d => ({ id: d.id, ...d.data() })); if (tab === 'records') renderTab(); }, () => { LB.ready = false; });
   } catch {}
 })();
 let lbWriting = Promise.resolve();
@@ -3359,22 +3417,27 @@ function boardRows(P, title, list, fmt) {
   return spans;
 }
 // ---- title-card tabs ----
-let tab = 'fly';
+let tab = 'main';
 function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
 function row(title, desc, right) {
   const r = el('div', 'row'), tx = el('div'); tx.append(el('h3', null, title), el('p', null, desc)); r.append(tx); if (right) r.append(right); return r;
 }
 function renderPurse() {
-  const pm = pactMul();
-  $('purse').textContent = `◆ ${M.embers} embers${pm > 1 ? ` · Pact score ×${pm.toFixed(2)}` : ''}`;
+  $('purse').textContent = `◆ ${M.embers} embers`;
+}
+function section(P, title, open = false) { const d = el('details'); d.open = open; d.append(el('summary', null, title)); const body = el('div', 'panel-in'); d.append(body); P.append(d); return body; }
+function renderMenu() {
+  const vet = (M.runs || 0) >= 1, paused = phase === 'paused';
+  for (const id of ['m-modes', 'm-dragon', 'm-records']) $(id).hidden = !vet || paused;
 }
 function renderTab() {
-  document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
-  $('tab-fly').hidden = tab !== 'fly';
-  const P = $('tab-panel'); P.hidden = tab === 'fly'; P.textContent = '';
-  renderPurse(); renderForms();
-  if (tab === 'lair') {
-    P.append(el('p', 'note', 'Shape your dragon. Changes show on the title screen behind this card; premium parts cost embers.'));
+  const main = tab === 'main';
+  $('ov-main').hidden = !main; $('sheet').hidden = main;
+  for (const k of ['modes', 'dragon', 'settings']) $('sh-' + k).hidden = tab !== k;
+  const P = $('tab-panel'); P.textContent = ''; P.hidden = !(tab === 'dragon' || tab === 'records');
+  renderPurse(); renderForms(); renderMenu();
+  if (tab === 'dragon') {
+    P.append(el('h3', 'sec', 'Look'));
     const nr = el('div', 'row'), lab = el('label', null, 'Name'); lab.htmlFor = 'dname';
     const inp = el('input', 'copybox'); inp.id = 'dname'; inp.maxLength = 16; inp.placeholder = 'Unnamed'; inp.value = M.custom.name || ''; inp.autocomplete = 'off';
     inp.addEventListener('input', () => { M.custom.name = inp.value.slice(0, 16); saveMeta(); });
@@ -3388,59 +3451,54 @@ function renderTab() {
         if (cat === 'scale' || cat === 'glow') { const sw = el('span', 'sw'); sw.style.background = o.id == null ? 'linear-gradient(135deg,#86f2ff,#ff8a4a)' : '#' + o.id.toString(16).padStart(6, '0'); b.append(sw); }
         b.append(own ? o.name : `${o.name} ◆${o.cost}`);
         b.addEventListener('click', () => {
-          if (!own) { if (M.embers < o.cost) { tab = 'lair'; renderTab(); $('purse').textContent = `◆ ${M.embers} embers · ${o.name} needs ◆ ${o.cost}`; return; } M.embers -= o.cost; M.owned[lookKey(cat, o.id)] = dayKey(); }
+          if (!own) { if (M.embers < o.cost) { tab = 'dragon'; renderTab(); $('purse').textContent = `◆ ${M.embers} embers · ${o.name} needs ◆ ${o.cost}`; return; } M.embers -= o.cost; M.owned[lookKey(cat, o.id)] = dayKey(); }
           M.custom[cat] = o.id; saveMeta(); applyLook(); initAudio(); sfx.chime(); renderTab();
         });
         chips.append(b);
       }
       tx.append(chips); box.append(tx); P.append(box);
     }
-  } else if (tab === 'aerie') {
-    P.append(el('p', 'note', 'Spend embers earned in flight. Unlocks are kept on this device.'));
+    P.append(el('h3', 'sec', 'Unlocks'));
     for (const it of SHOP) {
       const b = el('button', 'chip buy', owns(it.id) ? 'Owned' : `◆ ${it.cost}`);
       b.type = 'button'; b.disabled = owns(it.id) || M.embers < it.cost;
       b.addEventListener('click', () => { if (owns(it.id) || M.embers < it.cost) return; M.embers -= it.cost; M.owned[it.id] = dayKey(); saveMeta(); initAudio(); sfx.chime(); renderTab(); });
       P.append(row(it.name, it.d, b));
     }
-  } else if (tab === 'pact') {
-    P.append(el('p', 'note', 'Swear pacts before you fly. Each one makes the sky harder and raises every point you score.'));
-    for (const pc of PACTS) {
-      const b = el('button', 'chip', pactOn(pc.id) ? 'Sworn' : 'Off'); b.type = 'button'; b.setAttribute('aria-pressed', String(pactOn(pc.id)));
-      b.addEventListener('click', () => { M.pact[pc.id] = !pactOn(pc.id); saveMeta(); renderTab(); });
-      P.append(row(`${pc.name} · +${Math.round(pc.bonus * 100)}%`, pc.d, b));
+  } else if (tab === 'records') {
+    const LP = section(P, 'Recent flights', true);
+    const runs = loadRuns();
+    LP.append(el('p', 'note', `Best Story ${M.bestStory.toLocaleString()} · best Endless ${M.bestEndless.toLocaleString()} (stage ${M.endlessStage}).`));
+    if (!runs.length) LP.append(el('p', 'note', 'No flights yet. Your last 30 runs will be listed here.'));
+    for (const r of runs.slice(0, 12)) {
+      const when = new Date(r.at), label = `${when.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · ${MODE_LABEL[r.mode] || r.mode} · ${(FORMS[r.form] || FORMS.sky).name}`;
+      LP.append(row(`${r.score.toLocaleString()} · ${r.grade}`, `${label} · ${r.stage}${r.stg ? `, stage ${r.stg}` : ''} · best chain ${r.chain}${r.cause ? ` · downed by ${r.cause}` : r.result === 'clear' ? ' · cleared' : ''}`));
     }
-  } else if (tab === 'beasts') {
-    for (const bz of BEASTS) {
-      const s = M.beasts[bz.k];
-      P.append(s && s.s ? row(bz.name, `${bz.lore} Seen ${s.s.toLocaleString()} · downed ${s.k.toLocaleString()}.`) : row('Unknown', 'Not yet encountered.'));
-    }
-  } else if (tab === 'feats') {
-    const done = FEATS.filter(f => M.feats[f.id]).length;
-    P.append(el('p', 'note', `${done} of ${FEATS.length} feats earned.`));
-    for (const f of FEATS) P.append(row(`${M.feats[f.id] ? '✓ ' : ''}${f.name}`, `${f.d} ${M.feats[f.id] ? `Earned ${M.feats[f.id]}.` : `Reward ◆ ${f.r}.`}`));
-  } else if (tab === 'board') {
-    if (!LB.ready) { P.append(el('p', 'note', 'The shared leaderboard appears when this page is open in Claude and you are signed in. Your own bests are always in the Log.')); return; }
+    if (LB.ready) {
+      const BP = section(P, 'Leaderboard');
+    
     const key = dayKey();
     const daily = LB.rows.filter(r => r.daily?.[key]?.score).map(r => ({ id: r.id, ...r.daily[key] })).sort((a, b) => b.score - a.score).slice(0, 10);
     const story = LB.rows.filter(r => r.bestStory).map(r => ({ id: r.id, score: r.bestStory })).sort((a, b) => b.score - a.score).slice(0, 5);
     const endless = LB.rows.filter(r => r.bestEndless).map(r => ({ id: r.id, score: r.bestEndless, stg: r.endlessStage })).sort((a, b) => b.score - a.score).slice(0, 5);
     const rush = LB.rows.filter(r => r.bestRush).map(r => ({ id: r.id, score: r.bestRush, n: r.rushRounds })).sort((a, b) => b.score - a.score).slice(0, 5);
     const spans = [
-      ...boardRows(P, `Daily flight · ${key} · ${BIOMES[BIOME_ORDER[dayNum() % 3]].name}`, daily, r => `Rank ${r.grade} · ${(FORMS[r.form] || FORMS.sky).name} · ${r.stage}`),
-      ...boardRows(P, 'Story · best ever', story, () => 'Best Story score'),
-      ...boardRows(P, 'Endless · best ever', endless, r => `Reached stage ${r.stg || 1}`),
-      ...boardRows(P, 'Boss Rush · best ever', rush, r => `${r.n || 0} boss${r.n === 1 ? '' : 'es'} defeated`),
+      ...boardRows(BP, `Daily flight · ${key} · ${BIOMES[BIOME_ORDER[dayNum() % 3]].name}`, daily, r => `Rank ${r.grade} · ${(FORMS[r.form] || FORMS.sky).name} · ${r.stage}`),
+      ...boardRows(BP, 'Story · best ever', story, () => 'Best Story score'),
+      ...boardRows(BP, 'Endless · best ever', endless, r => `Reached stage ${r.stg || 1}`),
+      ...boardRows(BP, 'Boss Rush · best ever', rush, r => `${r.n || 0} boss${r.n === 1 ? '' : 'es'} defeated`),
     ];
     const ids = [...new Set(spans.map(sp => sp.dataset.uid))];
     if (ids.length) LB.user.profiles(ids).then(ps => { for (const sp of spans) { const pr = ps[sp.dataset.uid]; sp.textContent = pr?.isMe ? 'You' : (pr?.name || 'A flyer'); } }).catch(() => {});
-  } else if (tab === 'log') {
-    const runs = loadRuns();
-    P.append(el('p', 'note', `Best Story ${M.bestStory.toLocaleString()} · best Endless ${M.bestEndless.toLocaleString()} (stage ${M.endlessStage}).`));
-    if (!runs.length) P.append(el('p', 'note', 'No flights yet. Your last 30 runs will be listed here.'));
-    for (const r of runs.slice(0, 12)) {
-      const when = new Date(r.at), label = `${when.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · ${MODE_LABEL[r.mode] || r.mode} · ${(FORMS[r.form] || FORMS.sky).name}`;
-      P.append(row(`${r.score.toLocaleString()} · ${r.grade}`, `${label} · ${r.stage}${r.stg ? `, stage ${r.stg}` : ''} · best chain ${r.chain}${r.cause ? ` · downed by ${r.cause}` : r.result === 'clear' ? ' · cleared' : ''}`));
+    }
+    const FP = section(P, `Feats · ${FEATS.filter(f => M.feats[f.id]).length} of ${FEATS.length}`);
+    const done = FEATS.filter(f => M.feats[f.id]).length;
+    FP.append(el('p', 'note', `${done} of ${FEATS.length} feats earned.`));
+    for (const f of FEATS) FP.append(row(`${M.feats[f.id] ? '✓ ' : ''}${f.name}`, `${f.d} ${M.feats[f.id] ? `Earned ${M.feats[f.id]}.` : `Reward ◆ ${f.r}.`}`));
+    const XP = section(P, 'Bestiary');
+    for (const bz of BEASTS) {
+      const s = M.beasts[bz.k];
+      XP.append(s && s.s ? row(bz.name, `${bz.lore} Seen ${s.s.toLocaleString()} · downed ${s.k.toLocaleString()}.`) : row('Unknown', 'Not yet encountered.'));
     }
   }
 }
@@ -3454,11 +3512,12 @@ function renderForms() {
   });
   $('opt-pattern').textContent = `Pattern: ${M.pattern[0].toUpperCase() + M.pattern.slice(1)}`;
 }
-document.querySelectorAll('#tabs button').forEach(b => b.addEventListener('click', () => { tab = b.dataset.tab; renderTab(); }));
+document.querySelectorAll('#menu button').forEach(b => b.addEventListener('click', () => { tab = b.dataset.sheet; initAudio(); sfx.ui(); renderTab(); }));
+$('sheet-back').addEventListener('click', () => { tab = 'main'; sfx.ui(); renderTab(); });
 $('opt-pattern').addEventListener('click', () => {
   const list = Object.keys(PATTERNS).filter(patternOwned), i = list.indexOf(M.pattern);
   M.pattern = list[(i + 1) % list.length]; saveMeta(); applyLook(); renderForms();
-  if (list.length === 1) { tab = 'aerie'; renderTab(); }
+  if (list.length === 1) { tab = 'dragon'; renderTab(); }
 });
 
 // ======================= main loop =======================
@@ -3481,7 +3540,7 @@ function frame(now) {
   if (paused) return;
   const realDt = Math.min(0.05, (now - lastT) / 1000); lastT = now;
   if (slowT > 0) { slowT -= realDt; if (slowT <= 0) timeScale = 1; } else timeScale = lerp(timeScale, 1, Math.min(1, realDt * 4));
-  const dt = phase === 'choose' ? 0 : realDt * timeScale;
+  const dt = phase === 'choose' || phase === 'paused' ? 0 : realDt * timeScale;
   let aimX = 0, aimY = 0, lockFrac = 0;
 
   if (phase === 'title' || !S) {
@@ -3526,7 +3585,7 @@ function frame(now) {
       S.charge = Math.min(maxC, S.charge + dt / 0.75 * (has('swift') ? 1.5 : 1));
       if (Math.floor(S.charge) > prev) { sfx.charge(Math.floor(S.charge)); buzz(12); }
     } else if (!ptr.down) S.charge = 0;
-    updateBreath(dt);
+    updateBreath(dt); tutorial();
     if (phase === 'play' && has('ember')) {
       S.emberT -= dt;
       if (S.emberT <= 0) {
