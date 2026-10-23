@@ -2275,9 +2275,14 @@ function shockwave() {
 }
 const bez = (a, b, c, u) => { const m = 1 - u; return m * m * a + 2 * m * u * b + u * u * c; };
 const lp = new V3(), lw = new V3();
+// lance thickness grows with the dragon: thin threads for a Hatchling, heavy beams for an Elder
+const LANCE_GROW = [0.5, 0.68, 0.85, 1.0];
 function updateLances() {
+  // many lances in the air at once share the brightness, so a big volley stays coloured instead of washing white
+  let live = 0; for (const L of S.lances) if (S.t >= L.start && L.end < 0) live++;
+  const crowd = 1 / Math.sqrt(Math.max(1, live / 3)), grow = LANCE_GROW[S.stage] + 0.12 * (S.ascN || 0);
   for (const L of S.lances) {
-    const col = L.col || D.form.lance, sz = 1.5 * (1 + 0.3 * ((L.dmg || 1) - 1));
+    const col = L.col || D.form.lance, sz = 1.25 * grow * (1 + 0.3 * ((L.dmg || 1) - 1)), br = 0.5 * crowd * (0.8 + 0.2 * grow);
     if (S.t < L.start || L.end >= 0) continue;
     if (!L.launched) {
       L.launched = true; if (!L.v.berserk || L.idx % 3 === 0) sfx.launch(L.idx || 0);
@@ -2285,7 +2290,7 @@ function updateLances() {
       if (!L.chain) {
         const m = D.mouthWorld(lw), col0 = L.col || D.form.lance, vx = rigT.x * S.speed, vy = rigT.y * S.speed, vz = rigT.z * S.speed;
         glowP.spawn(m.x, m.y, m.z, vx, vy, vz, col0[0] * 0.9, col0[1] * 0.9, col0[2] * 0.9, 0.9, 0.09, { grow: 6 });
-        for (let k = 0; k < 3; k++) glowP.spawn(m.x, m.y, m.z, vx + rigT.x * 20 + rnd(-6, 6), vy + rnd(-2, 6), vz + rigT.z * 20 + rnd(-6, 6), 1.6, 1.6, 1.6, 0.25, 0.15);
+        for (let k = 0; k < 2; k++) glowP.spawn(m.x, m.y, m.z, vx + rigT.x * 20 + rnd(-6, 6), vy + rnd(-2, 6), vz + rigT.z * 20 + rnd(-6, 6), col0[0] * 0.7, col0[1] * 0.7, col0[2] * 0.7, 0.25, 0.15);
       }
     }
     const u = clamp((S.t - L.start) / L.dur, 0, 1), e = Math.pow(u, 1.35);
@@ -2296,13 +2301,14 @@ function updateLances() {
     const rvx = rigT.x * S.speed * 0.9, rvy = rigT.y * S.speed * 0.9, rvz = rigT.z * S.speed * 0.9;
     if (L.prev) {
       // the original full-bright streak, now moving with the dragon so it never trails back past it
-      const steps = clamp(Math.ceil(L.prev.distanceTo(lw) / 0.7), 2, 24);
+      const steps = clamp(Math.ceil(L.prev.distanceTo(lw) / 1.1), 2, 16);
       for (let k = 0; k < steps; k++) {
         const f = k / steps, x = lerp(L.prev.x, lw.x, f), y = lerp(L.prev.y, lw.y, f), z = lerp(L.prev.z, lw.z, f);
-        glowP.spawn(x, y, z, rvx + rnd(-0.6, 0.6), rvy + rnd(-0.6, 0.6), rvz + rnd(-0.6, 0.6), col[0], col[1], col[2], sz, 0.38, { grow: -2 });
+        glowP.spawn(x, y, z, rvx + rnd(-0.5, 0.5), rvy + rnd(-0.5, 0.5), rvz + rnd(-0.5, 0.5), col[0] * br, col[1] * br, col[2] * br, sz, 0.26 + 0.14 * grow, { grow: -2 });
       }
     } else L.prev = new V3();
-    glowP.spawn(lw.x, lw.y, lw.z, rvx, rvy, rvz, 2.4, 2.4, 2.4, 3.2, 0.05);
+    // a small hot core in the lance's own colour leads each streak
+    glowP.spawn(lw.x, lw.y, lw.z, rvx, rvy, rvz, (col[0] * 0.6 + 0.5) * crowd, (col[1] * 0.6 + 0.5) * crowd, (col[2] * 0.6 + 0.5) * crowd, 1.4 * grow, 0.05);
     L.prev.copy(lw);
     if (u >= 1) { L.end = S.t; hit(L); }
   }
