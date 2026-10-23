@@ -1669,12 +1669,17 @@ function mirror(o = {}) {
 }
 // returns false (and fires nothing) when rock blocks the shot
 const shotLog = [];
+const DIFF_THREAT = { calm: 0.75, normal: 1, fierce: 1.2 };
+function shotCap() { return Math.round(clamp(S.maxL + 1, 5, 14) * DIFF_THREAT[M.diff || 'normal']); }
 function shoot(fromLocal, T = 2.8, src = '?', off = null, size = 2.1) {
   if (!inSomeView(fromLocal)) return false;
+  let live = 0; for (const e of S.enemies) if (e.alive && e.kind === 'bullet') live++;
+  if (live >= shotCap() || (S.shotTokens ?? 3) < 1) return false;
+  S.shotTokens = (S.shotTokens ?? 3) - 1;
   if (pactOn('fangs')) T /= 1.3;
   T *= DIFFS[M.diff || 'normal'].shot;
   if (blocked(rig.localToWorld(losA.copy(fromLocal)), D.group.getWorldPosition(losB), 0)) return false;
-  if (window.__sky) { const dx = fromLocal.x - S.dl.x, dz = fromLocal.z - S.dl.z, hd = Math.hypot(dx, dz); shotLog.push({ off: +(Math.abs(Math.atan2(fromLocal.x, -fromLocal.z) - Math.round(Math.atan2(fromLocal.x, -fromLocal.z) / (Math.PI / 2)) * (Math.PI / 2)) * 57.3).toFixed(1), half: +(halfHFov() * 57.3).toFixed(1), src, d: Math.round(S.d), quad: quadOf(fromLocal), elev: +(Math.atan2(fromLocal.y - S.dl.y, hd) * 57.3).toFixed(0), dist: Math.round(hd), seeCam: !blocked(camera.getWorldPosition(new V3()), rig.localToWorld(fromLocal.clone())) }); }
+  if (window.__sky) { const dx = fromLocal.x - S.dl.x, dz = fromLocal.z - S.dl.z, hd = Math.hypot(dx, dz); shotLog.push({ t: +S.t.toFixed(1), stg: S.stageNo, lvl: S.lvl, boss: !!S.boss, off: +(Math.abs(Math.atan2(fromLocal.x, -fromLocal.z) - Math.round(Math.atan2(fromLocal.x, -fromLocal.z) / (Math.PI / 2)) * (Math.PI / 2)) * 57.3).toFixed(1), half: +(halfHFov() * 57.3).toFixed(1), src, d: Math.round(S.d), quad: quadOf(fromLocal), elev: +(Math.atan2(fromLocal.y - S.dl.y, hd) * 57.3).toFixed(0), dist: Math.round(hd), seeCam: !blocked(camera.getWorldPosition(new V3()), rig.localToWorld(fromLocal.clone())) }); }
   const meteor = size > 3;
   const m = new THREE.Mesh(G.bullet, meteor ? Mt.meteor : Mt.bullet); m.scale.setScalar(size); m.position.copy(fromLocal);
   const v = new V3().copy(S.dl); if (off) v.add(off); v.sub(fromLocal).divideScalar(T);
@@ -1914,7 +1919,7 @@ function maybeElite(e) {
 }
 function eliteDeath(e) {
   if (e.elite === 'splitting') shards(e.mesh.position.clone(), e.hue ?? rh());
-  if (e.elite === 'vengeful' && phase === 'play') barrage(e.mesh.position.clone(), 4, 10, 2.6, 'a vengeful elite');
+  if (e.elite === 'vengeful' && phase === 'play') barrage(e.mesh.position.clone(), 3, 10, 2.6, 'a vengeful elite');
 }
 
 // ---------- sandworm ----------
@@ -2047,9 +2052,10 @@ function spawnBoss() {
 const toLocal = (obj, out = new V3()) => rig.worldToLocal(obj.getWorldPosition(out));
 // fire n shots from a rig-local point with a spread around the dragon; some miss on purpose and all of them can be locked
 function barrage(from, n, spread, T, src, size) {
-  let k = 0;
-  for (let i = 0; i < n; i++) if (shoot(from, T * rnd(0.92, 1.08), src, i === 0 ? null : new V3(rnd(-1, 1) * spread, rnd(-1, 1) * spread * 0.6, rnd(-1, 1) * spread), size)) k++;
-  return k;
+  if (!shoot(from, T, src, null, size)) return 0;
+  const at = from.clone();
+  for (let i = 1; i < n; i++) later(i * 0.11, () => { if (phase === 'play') shoot(at, T * rnd(0.95, 1.05), src, new V3(rnd(-1, 1) * spread, rnd(-1, 1) * spread * 0.6, rnd(-1, 1) * spread), size); });
+  return n;
 }
 function bossDefeated(B) {
   B.dead = true; S.endT = S.t + 3.4; slow(0.25, 1.2);
@@ -2112,9 +2118,9 @@ function spawnGuardian() {
       this.fireT -= dt;
       if (this.fireT <= 0) {
         const live = cores.filter(c => c.alive), src = live.length ? live : [center];
-        let fired = 0; for (const c of src.slice(0, enraged ? 1 : 3)) fired += barrage(toLocal(c.mesh), enraged ? 8 : 3, enraged ? 14 : 7, 2.7, 'the Guardian');
+        let fired = 0; for (const c of src.slice(0, enraged ? 1 : 3)) fired += barrage(toLocal(c.mesh), enraged ? 6 : 3, enraged ? 12 : 7, 2.7, 'the Guardian');
         this.fireT = fired ? (enraged ? 2.4 : 2.8) : 0.4; this.telS = false; if (fired) sfx.pew(true);
-        if (enraged && ++this.spiral % 2 === 0) for (let k = 0; k < 8; k++) later(0.1 * k, () => { if (center.alive) shoot(toLocal(center.mesh), 2.6, 'the Guardian', new V3(Math.cos(k) * 10, Math.sin(k) * 6, 0)); });
+        if (enraged && ++this.spiral % 2 === 0) for (let k = 0; k < 5; k++) later(0.14 * k, () => { if (center.alive) shoot(toLocal(center.mesh), 2.6, 'the Guardian', new V3(Math.cos(k) * 10, Math.sin(k) * 6, 0)); });
       }
       this.minionT -= dt;
       if (this.minionT <= 0) { shards(g.position.clone(), rh()); this.minionT = enraged ? 7 : 10; }
@@ -2495,7 +2501,6 @@ function nextStage(route) {
   if (S.route === 'storm') for (const o of S.objs) o.reward = Math.round(o.reward * 1.5);
   if (S.route) later(0.5, () => popup(ROUTES[S.route].name.toUpperCase(), W / 2, H * 0.36, false, '#86f2ff'));
   popup(`STAGE ${S.stageNo + 1} · ${ST.B.name.toUpperCase()}`, W / 2, H * 0.3, true, '#ffb347');
-  later(1.6, () => offerMutations('Stage cleared'));
 }
 function damage(info = {}) {
   if (phase !== 'play' || S.evolveT > 0) return;
@@ -3545,6 +3550,7 @@ function frame(now) {
     while (phase === 'play' && S.si < SCRIPT.length && S.d >= SCRIPT[S.si][0]) SCRIPT[S.si++][1]();
     if (S.mode !== 'rush') director(dt);
     S.cleanT += dt; S.recentHits = Math.max(0, S.recentHits - dt / 12);
+    S.shotTokens = Math.min(6, (S.shotTokens ?? 3) + dt * (1.8 + S.stageNo * 0.4 + (S.boss ? 1.2 : 0)) * DIFF_THREAT[M.diff || 'normal']);
     if (S.comboT > 0) { S.comboT -= dt; if (S.comboT <= 0) comboBreak(); }
     if (S.route === 'storm' && phase === 'play') { S.boltT = (S.boltT ?? 5) - dt; if (S.boltT <= 0) { S.boltT = rnd(5, 10); S.flash = 0.35; sfx.boom(1.3); world.sun.intensity += 1.5; } }
     for (const tm of S.timers) if (S.t >= tm.at) { tm.fn(); tm.done = true; }
