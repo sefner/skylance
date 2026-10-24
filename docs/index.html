@@ -452,10 +452,12 @@ function buildStage(def) {
   }
   const secD = s => dOfZ(s.z0);
   WORM_D = secD(secs[2]) + 120; BOSS_D = secD(secs[5]) + 250;
+  EVENT_D = Math.min(WORM_D + (BOSS_D - WORM_D) * 0.42, BOSS_D - 2300);
   const climb = secs.find(s => s.type === 'climb');
 
   // ---- meshes ----
   const g = new THREE.Group(); scene.add(g); world.stage = g;
+  if (def.biome === 'frost') buildCavern(g, EVENT_D - 200, EVENT_D + 1450);
   const NX = 120, z0 = 200, z1 = -(i * 400) - 400, dz = 20, NZ = Math.round((z0 - z1) / dz) + 1;
   const pos = new Float32Array(NX * NZ * 3), col = new Float32Array(NX * NZ * 3);
   for (let j = 0; j < NZ; j++) {
@@ -588,12 +590,13 @@ function director(dt) {
   const R = S.dir;
   if (phase !== 'play' || S.boss || S.d > BOSS_D - 260 || S.evolveT > 0) return;
   R.timer -= dt; if (R.timer > 0) return;
-  const setPiece = S.worm || S.elite || S.t < (S.swarmUntil || 0);
+  const setPiece = S.worm || S.elite || S.event || S.t < (S.swarmUntil || 0);
   const adapt = clamp(1 - 0.16 * S.recentHits, 0.5, 1) * (S.cleanT > 25 ? 1.15 : 1) * (S.route === 'storm' ? 1.3 : 1);
   const base = (5 + S.lvl * 0.85 + S.stageNo * 4 + (pactOn('horde') ? 4 : 0)) * S.diffMul * adapt * (setPiece ? 0.35 : 1);
   if (R.mode === 'relax') { R.mode = 'build'; R.n = 0; R.cycle++; R.timer = 0.5; return; }
   if (R.mode === 'build') {
     spawnWave(base * (0.75 + 0.18 * R.n));
+    if (Math.random() < 0.25 && !S.event && !S.enemies.some(e => e.alive && e.kind === 'orb')) later(1.5, () => phase === 'play' && spawnOrb());
     R.n++; R.timer = Math.max(3.2, 5 - S.lvl * 0.05) * (setPiece ? 1.6 : 1);
     if (R.n >= 3 + Math.min(2, R.cycle) && !setPiece) R.mode = 'peak';
     return;
@@ -642,9 +645,12 @@ function genScript(def, rng) {
   let dElite = BOSS_D * 0.3, dSwarm = BOSS_D * 0.68;
   if (Math.abs(dElite - WORM_D) < 600) dElite = WORM_D - 700;
   if (Math.abs(dSwarm - WORM_D) < 500) dSwarm = WORM_D + 700;
+  if (dSwarm > EVENT_D - 600 && dSwarm < EVENT_D + 2000) dSwarm = EVENT_D - 650;
+  if (dElite > EVENT_D - 600 && dElite < EVENT_D + 2000) dElite = EVENT_D - 900;
   if (dElite > 600) out.push([dElite, () => spawnCarrier(), 'elite']);
   out.push([dSwarm, () => stampede(def.diff + 0.6)]);
   out.push([WORM_D, () => spawnWorm(), 'worm']);
+  if (EVENTS[def.biome]) out.push([EVENT_D, () => startEvent(), 'event']);
   out.push([BOSS_D, () => spawnBoss()]);
   out.sort((a, b) => a[0] - b[0]);
   return out;
@@ -1532,7 +1538,7 @@ const ET = {
   fist:   { hp: 5, r: 9, pts: 1500, threat: true },
   chest:  { hp: 14, r: 12, pts: 8000, threat: true },
 };
-const NO_RANK = new Set(['bullet', 'weak', 'core', 'ccore', 'shard', 'iheart', 'ihead', 'eye', 'fist', 'chest', 'pod', 'ecore']);
+const NO_RANK = new Set(['orb', 'gold', 'bullet', 'weak', 'core', 'ccore', 'shard', 'iheart', 'ihead', 'eye', 'fist', 'chest', 'pod', 'ecore']);
 // eye colours: kill 3+ of one colour in a volley for a mono-chain bonus
 const HUES = [{ name: 'AMBER', c: [2.2, 1.2, 0.35], css: '#ffb347' }, { name: 'JADE', c: [0.4, 2.1, 1.0], css: '#5dffb0' }, { name: 'VIOLET', c: [1.6, 0.55, 2.4], css: '#c58cff' }];
 Mt.eyes = HUES.map(h => new THREE.MeshBasicMaterial({ color: new THREE.Color(...h.c) }));
@@ -1687,7 +1693,7 @@ const shotLog = [];
 const DIFF_THREAT = { calm: 0.75, normal: 1, fierce: 1.2 };
 function shotCap() { return Math.round(clamp(S.maxL + 1, 5, 14) * DIFF_THREAT[M.diff || 'normal']); }
 function shoot(fromLocal, T = 2.8, src = '?', off = null, size = 2.1) {
-  if (!inSomeView(fromLocal)) return false;
+  if (S.bonus || !inSomeView(fromLocal)) return false;
   let live = 0; for (const e of S.enemies) if (e.alive && e.kind === 'bullet') live++;
   if (live >= shotCap() || (S.shotTokens ?? 3) < 1) return false;
   S.shotTokens = (S.shotTokens ?? 3) - 1;
@@ -1722,6 +1728,171 @@ function shoot(fromLocal, T = 2.8, src = '?', off = null, size = 2.1) {
     }
   } });
   return true;
+}
+
+// ---------- signature events: one per land, about 20 seconds mid-stage ----------
+let EVENT_D = 0;
+const EV_SPEED = { sandstorm: 55, cavern: 60, eruption: 95 };
+const EVENTS = {
+  dusk:  { kind: 'sandstorm', name: 'SANDSTORM',    dur: 22, info: 'Sandstorm: enemies loom out of the dust. Lock the shapes.' },
+  frost: { kind: 'cavern',    name: 'ICE CAVERN',   dur: 20, info: 'Ice Cavern: crystal turrets line the walls.' },
+  ember: { kind: 'eruption',  name: 'ERUPTION',     dur: 20, info: 'Eruption: lock the falling rocks before they land.' },
+};
+const CAVE_R = 34;
+G.rock = new THREE.DodecahedronGeometry(1, 0);
+Mt.lavaRock = new THREE.MeshStandardMaterial({ color: 0x2a1812, emissive: new THREE.Color(1.6, 0.45, 0.1), emissiveIntensity: 0.55, roughness: 0.9, flatShading: true });
+Mt.iceWall = new THREE.MeshStandardMaterial({ color: 0x6fa8c8, emissive: 0x16405a, roughness: 0.25, metalness: 0.1, flatShading: true, side: THREE.BackSide });
+// the ice cavern is real geometry: a frozen tube wrapped around the track, studded with crystals
+function buildCavern(g, d0, d1) {
+  const pts = []; for (let d = d0; d <= d1; d += 40) pts.push(rail.getPointAt(clamp(d / RAIL_LEN, 0, 0.999)));
+  const path = new THREE.CatmullRomCurve3(pts), segs = Math.max(8, pts.length * 3);
+  const tube = new THREE.TubeGeometry(path, segs, CAVE_R + 8, 10, false);
+  const pos = tube.attributes.position;
+  for (let i = 0; i < pos.count; i++) { const n = vnoise(i * 0.37, i * 0.11) * 6; pos.setXYZ(i, pos.getX(i) + n * 0.5, pos.getY(i) + n * 0.3, pos.getZ(i) + n * 0.5); }
+  tube.computeVertexNormals();
+  g.add(new THREE.Mesh(tube, Mt.iceWall));
+  const spikes = new THREE.InstancedMesh(new THREE.ConeGeometry(1, 1, 5).translate(0, 0.5, 0), Mt.ice, 220), dm = new THREE.Object3D(); let n = 0;
+  for (let k = 0; k < 220; k++) {
+    const u = Math.random(), p = path.getPointAt(u), t = path.getTangentAt(u), a = Math.random() * TAU;
+    const side = new V3().crossVectors(t, UP).normalize(), up = new V3().crossVectors(side, t).normalize();
+    const dir = side.multiplyScalar(Math.cos(a)).addScaledVector(up, Math.sin(a));
+    dm.position.copy(p).addScaledVector(dir, CAVE_R + 7); dm.quaternion.setFromUnitVectors(UP, dir.clone().negate());
+    const h = rnd(4, 11); dm.scale.set(rnd(1, 2.5), h, rnd(1, 2.5)); dm.updateMatrix(); spikes.setMatrixAt(n++, dm.matrix);
+  }
+  spikes.count = n; g.add(spikes);
+}
+function startEvent() {
+  const E = EVENTS[ST.biome]; if (!E || S.mode === 'rush' || S.boss) return;
+  if (S.worm || S.elite) { later(2, startEvent); return; }
+  S.event = { ...E, t: 0, rockT: 1, gunT: 1.5, waveT: 1, geyserT: 0.5, hitsAt: S.hits };
+  popup(E.name, W / 2, H * 0.28, true, '#ffb347'); sfx.warn(); buzz([40, 30, 40]);
+  later(1.2, () => { if (S.event) S.hint = { text: E.info, until: S.t + 4 }; });
+}
+function endEvent() {
+  const E = S.event; S.event = null;
+  const clean = S.hits === E.hitsAt, bonus = (clean ? 8000 : 3000) * (S.stageNo + 1);
+  S.score += bonus; if (clean) { M.embers += 6; saveMeta(); }
+  popup(`${E.name} SURVIVED${clean ? ' · UNTOUCHED' : ''} +${bonus.toLocaleString()}${clean ? ' · +6◆' : ''}`, W / 2, H * 0.32, false, '#ffd27a'); sfx.full();
+}
+const sandCol = new THREE.Color(0.86, 0.66, 0.42);
+let stormK = 0;
+function updEvent(dt) {
+  const E = S.event;
+  // the sandstorm thickens and clears smoothly, even after the event ends
+  stormK = lerp(stormK, E && E.kind === 'sandstorm' && E.t < E.dur - 2 ? 1 : 0, Math.min(1, dt * 0.8));
+  if (stormK > 0.01) {
+    scene.fog.color.lerp(sandCol, stormK); scene.fog.near = lerp(280, 15, stormK); scene.fog.far = lerp(2500, 330, stormK); renderer.setClearColor(scene.fog.color);
+    world.skyMat.uniforms.top.value.lerp(sandCol, stormK * 0.9); world.skyMat.uniforms.hor.value.lerp(sandCol, stormK);
+    for (let k = 0; k < 4 * stormK; k++) { tmpV.set(rnd(-60, 60), rnd(-20, 40), -rnd(10, 120)); rig.localToWorld(tmpV); smokeP.spawn(tmpV.x, tmpV.y, tmpV.z, rigT.z * 60 + rnd(-10, 10), rnd(-2, 2), -rigT.x * 60, 0.78, 0.6, 0.4, rnd(2, 5), rnd(0.6, 1.2), { grow: 4, alpha: 0.45 }); }
+  } else { scene.fog.near = 280; scene.fog.far = 2500; }
+  if (!E || phase !== 'play') return;
+  E.t += dt;
+  if (E.kind === 'sandstorm') {
+    // dust-shapes: enemies appear close, out of the storm
+    E.waveT -= dt;
+    if (E.waveT <= 0) { E.waveT = rnd(2.2, 3); const w = frontX(220); for (let i = 0; i < 4 + Math.min(6, S.lvl / 3 | 0); i++) drone({ bx: rnd(-1, 1) * w, by: rnd(0, 40), a0: rnd(260, 340), va: -rnd(60, 80) }); if (Math.random() < 0.4) wasps(5); }
+  } else if (E.kind === 'cavern') {
+    E.gunT -= dt;
+    if (E.gunT <= 0 && E.t < E.dur - 5) { E.gunT = rnd(1.6, 2.4); caveGun(); if (Math.random() < 0.5) caveGun(); }
+    E.waveT -= dt;
+    if (E.waveT <= 0 && E.t < E.dur - 5) { E.waveT = rnd(2.5, 3.5); crystals(3 + Math.min(4, S.lvl / 4 | 0)); for (const e of S.enemies) if (e.kind === 'crystal' && e.age < 0.1) { const r = Math.hypot(e.bx, e.by - 5); if (r > CAVE_R - 10) { e.bx *= (CAVE_R - 10) / r; e.by = 5 + (e.by - 5) * (CAVE_R - 10) / r; } } }
+  } else if (E.kind === 'eruption') {
+    S.shake = Math.max(S.shake, 0.07);
+    world.waterMat.emissiveIntensity = 1 + 0.6 * Math.max(0, Math.sin(E.t * 5));
+    E.geyserT -= dt;
+    if (E.geyserT <= 0) { E.geyserT = rnd(0.4, 0.9); geyser(); }
+    E.rockT -= dt;
+    if (E.rockT <= 0) {
+      E.rockT = rnd(0.7, 1.1);
+      const dz = rnd(170, 250), from = new V3(S.dl.x + rnd(-1, 1) * frontX(dz, 0.6), S.dl.y + rnd(60, 90), S.dl.z - dz);
+      if (shoot(from, rnd(2.6, 3.2), 'a falling rock', new V3(rnd(-6, 6), rnd(-3, 3), rnd(-6, 6)), 2.5)) { const r = S.enemies[S.enemies.length - 1]; r.meteor = true; r.mesh.geometry = G.rock; r.mesh.material = Mt.lavaRock; }
+    }
+  }
+  if (E.t >= E.dur) { if (E.kind === 'eruption') world.waterMat.emissiveIntensity = 1; endEvent(); }
+}
+// lava geyser: a column of fire and smoke erupting beside the track
+function geyser() {
+  const side = Math.random() < 0.5 ? -1 : 1, lx = side * rnd(60, 150), la = rnd(240, 440);
+  tmpV.set(lx, groundLocalY(), -la); rig.localToWorld(tmpV);
+  for (let k = 0; k < 26; k++) glowP.spawn(tmpV.x + rnd(-6, 6), tmpV.y + rnd(0, 20), tmpV.z + rnd(-6, 6), rnd(-6, 6), rnd(40, 90), rnd(-6, 6), 1.5, rnd(0.45, 0.8), 0.1, rnd(1.5, 3), rnd(0.8, 1.4), { grav: -60, drag: 0.4 });
+  for (let k = 0; k < 10; k++) smokeP.spawn(tmpV.x + rnd(-4, 4), tmpV.y + rnd(10, 40), tmpV.z + rnd(-4, 4), rnd(-3, 3), rnd(10, 25), rnd(-3, 3), 0.18, 0.12, 0.1, rnd(8, 14), rnd(1.5, 2.5), { grow: 10, alpha: 0.7 });
+  if (Math.random() < 0.4) sfx.boom(1.2);
+}
+// crystal turrets grow out of the cavern walls ahead and stay put as you fly past
+Object.assign(ET, { icegun: { hp: 2, r: 5.5, pts: 500, threat: true }, orb: { hp: 1, r: 5, pts: 0 }, gold: { hp: 1, r: 5, pts: 300 } });
+function caveGun() {
+  const u = clamp((S.d + rnd(320, 400)) / RAIL_LEN, 0, 0.999), p = rail.getPointAt(u), tg = rail.getTangentAt(u);
+  const side = new V3().crossVectors(tg, UP).normalize(), up = new V3().crossVectors(side, tg).normalize(), a = rnd(-0.4, Math.PI + 0.4);
+  const wp = p.addScaledVector(side, Math.cos(a) * (CAVE_R - 3)).addScaledVector(up, Math.sin(a) * (CAVE_R - 3) * 0.8), g = new THREE.Group();
+  const c = new THREE.Mesh(G.crystal, Mt.ice); c.scale.set(1.2, 1.5, 1.2); g.add(c);
+  const eyeMat = Mt.red.clone(), eye = new THREE.Mesh(G.orb, eyeMat); eye.scale.setScalar(0.45); eye.position.z = 0.9; g.add(eye);
+  g.scale.setScalar(3);
+  addEnemy('icegun', g, { name: 'a cavern turret', wp, eyeMat, fireT: rnd(1.5, 2.2), upd(e, dt) {
+    const m = e.mesh; m.position.copy(rig.worldToLocal(tmpV.copy(e.wp))); const ahead = -m.position.z;
+    m.lookAt(S.dl);
+    e.fireT -= dt; e.charge = clamp(1 - e.fireT / 0.8, 0, 1); dangerFlash(e);
+    if (e.fireT <= 0 && ahead > 60 && phase === 'play') e.fireT = shoot(m.position.clone(), 2.4, 'a cavern turret') ? 2.6 : 0.4;
+    if (ahead < -20) e.alive = false;
+  } });
+}
+// ---------- lockable orbs: spend a lock on a reward instead of an enemy ----------
+const ORBS = {
+  gold: { col: new THREE.Color(2.4, 1.8, 0.4), css: '#ffd27a', text: '+30% BERSERK', give() { S.berserk = Math.min(1, S.berserk + 0.3); } },
+  heart: { col: new THREE.Color(2.4, 0.4, 0.5), css: '#ff5d7d', text: '+1 HEART', give() { S.hp = Math.min(S.maxHp, S.hp + 1); } },
+  ember: { col: new THREE.Color(0.5, 1.6, 2.6), css: '#86f2ff', text: '+3◆ EMBERS', give() { M.embers += 3; saveMeta(); } },
+};
+function spawnOrb() {
+  const type = S.hp < S.maxHp && Math.random() < 0.45 ? 'heart' : Math.random() < 0.55 ? 'gold' : 'ember', O = ORBS[type];
+  const g = new THREE.Group(), core = new THREE.Mesh(G.orb, new THREE.MeshBasicMaterial({ color: O.col })); g.add(core);
+  const halo = new THREE.Mesh(G.ring, Mt.gold); halo.scale.setScalar(0.9); g.add(halo);
+  g.scale.setScalar(2.6);
+  if (!M.tut?.orb) { (M.tut ||= {}).orb = 1; saveMeta(); later(0.5, () => { S.hint = { text: 'Glowing orb: lock it to collect. Gold = Berserk, red = heart, blue = Embers.', until: S.t + 5 }; }); }
+  addEnemy('orb', g, { type, bx: rnd(-1, 1) * frontX(420, 0.6), by: rnd(15, 45), a0: 560, va: -60, halo, ph: rnd(0, TAU), upd(e, dt) {
+    const ahead = e.a0 + e.va * e.age; e.mesh.position.set(e.bx + Math.sin(e.age * 1.2 + e.ph) * 8, e.by + Math.sin(e.age * 2 + e.ph) * 4, -ahead);
+    e.halo.rotation.x += dt * 2; e.halo.rotation.y += dt * 3;
+    const wp = e.mesh.getWorldPosition(tmpV2); if (Math.random() < 0.4) glowP.spawn(wp.x, wp.y, wp.z, rnd(-3, 3), rnd(-3, 3), rnd(-3, 3), O.col.r * 0.6, O.col.g * 0.6, O.col.b * 0.6, 2.5, 0.3);
+    if (ahead < -20) e.alive = false;
+  } });
+}
+function collectOrb(t, wp) {
+  const O = ORBS[t.type]; O.give();
+  popup(O.text, W / 2, H * 0.42, false, O.css); sfx.chime(); ring(wp, O.css, 70);
+  for (let i = 0; i < 30; i++) glowP.spawn(wp.x, wp.y, wp.z, rnd(-30, 30), rnd(-30, 30), rnd(-30, 30), O.col.r, O.col.g, O.col.b, 1.4, 0.6, { drag: 3 });
+}
+// ---------- bonus sky: a short breather between stages, golden swarms and no enemy fire ----------
+function startBonus() {
+  S.bonus = { t: 0, dur: 16, total: 0, got: 0, waveT: 1.5 };
+  later(1.7, () => { if (S.bonus) { popup('BONUS SKY', W / 2, H * 0.28, true, '#ffd27a'); sfx.full(); } });
+  later(2.5, () => { if (S.bonus) S.hint = { text: 'Bonus sky: no enemy fire. Sweep up every golden drone!', until: S.t + 4 }; });
+}
+function goldWave(k) {
+  const w = frontX(400, 0.75), n = 8 + Math.min(6, S.lvl / 3 | 0), shape = k % 3;
+  for (let i = 0; i < n; i++) {
+    const f = i / (n - 1), a = f * TAU;
+    const bx = shape === 0 ? (f * 2 - 1) * w : shape === 1 ? Math.cos(a) * w * 0.6 : Math.sin(f * Math.PI * 2) * w * 0.7;
+    const by = shape === 0 ? 25 + Math.sin(f * Math.PI) * 18 : shape === 1 ? 25 + Math.sin(a) * 22 : 10 + f * 40;
+    const m = droneMesh(0, 2.3); m.traverse(o => { if (o.isMesh && (o.material === Mt.hull || o.material === Mt.hull2)) o.material = Mt.rim; });
+    const halo = new THREE.Mesh(G.ring, Mt.gold); halo.scale.setScalar(0.8); m.add(halo);
+    addEnemy('gold', m, { bx, by, a0: 600 + (shape === 2 ? i * 18 : 0), va: -85, amp: 2, ph: rnd(0, TAU), upd: updDrone });
+    S.bonus.total++;
+  }
+}
+function updBonus(dt) {
+  const B = S.bonus; if (!B || phase !== 'play') return;
+  B.t += dt; B.waveT -= dt;
+  if (B.t > 6.5 && B.t < B.dur) S.hint = { text: `BONUS SKY · ${B.got}/${B.total} · ${Math.ceil(B.dur - B.t)}s`, until: S.t + 0.3 };
+  if (B.waveT <= 0 && B.t < 8.5) { goldWave(B.n = (B.n || 0) + 1); B.waveT = 3; }
+  if (B.t >= B.dur) {
+    S.bonus = null; S.hint = null;
+    for (const e of S.enemies) if (e.kind === 'gold') e.alive = false;
+    const perfect = B.got >= B.total && B.total > 0, pts = B.got * 500 * (S.stageNo + 1) * (perfect ? 2 : 1);
+    S.score += pts; if (perfect) { M.embers += 10; saveMeta(); }
+    popup(perfect ? `PERFECT BONUS · ${B.got}/${B.total} · +${pts.toLocaleString()} · +10◆` : `BONUS · ${B.got}/${B.total} · +${pts.toLocaleString()}`, W / 2, H * 0.3, true, '#ffd27a');
+    if (perfect) sfx.full();
+    // the stage proper begins: skip anything the script placed during the bonus
+    while (S.si < SCRIPT.length && SCRIPT[S.si][0] < S.d + 150 && !SCRIPT[S.si][2]) S.si++;
+    S.dir.timer = 2;
+  }
 }
 
 // ---------- the wider bestiary: specialists, land natives and elites ----------
@@ -2314,7 +2485,7 @@ function spawnColossus() {
 }
 
 // ---------- damage / effects ----------
-const XPV = { diver: 2, phantom: 2, bomber: 3, linker: 4, sniper: 4, brute: 8, wasp: 1, burrower: 3, crystal: 2, bat: 1, salamander: 4, drone: 1, darter: 1, gunner: 3, bullet: 0.25, weak: 4, core: 4, ccore: 0, aegis: 2, splitter: 2, shard: 0.5, mirror: 3, iheart: 4, ihead: 0, eye: 5, fist: 6, chest: 0, pod: 3, ecore: 6 };
+const XPV = { diver: 2, phantom: 2, bomber: 3, linker: 4, sniper: 4, brute: 8, wasp: 1, burrower: 3, crystal: 2, bat: 1, salamander: 4, icegun: 3, gold: 0.5, orb: 0, drone: 1, darter: 1, gunner: 3, bullet: 0.25, weak: 4, core: 4, ccore: 0, aegis: 2, splitter: 2, shard: 0.5, mirror: 3, iheart: 4, ihead: 0, eye: 5, fist: 6, chest: 0, pod: 3, ecore: 6 };
 const locksFor = st => FORMS[formName].locks - 2 + st + (S?.lockBonus || 0);
 const PERKS = {
   lock:  { name: '+1 LOCK',            apply() { S.lockBonus++; S.maxL = locksFor(S.stage); } },
@@ -2521,6 +2692,8 @@ function nextStage(route) {
   if (S.route === 'storm') for (const o of S.objs) o.reward = Math.round(o.reward * 1.5);
   if (S.route) later(0.5, () => popup(ROUTES[S.route].name.toUpperCase(), W / 2, H * 0.36, false, '#86f2ff'));
   popup(`STAGE ${S.stageNo + 1} · ${ST.B.name.toUpperCase()}`, W / 2, H * 0.3, true, '#ffb347');
+  S.event = null; S.bonus = null;
+  if (S.mode === 'story' || S.mode === 'endless') startBonus();
 }
 function damage(info = {}) {
   if (phase !== 'play' || S.evolveT > 0) return;
@@ -2563,7 +2736,7 @@ function toScreen(wp, out) {
   out.ppu = (H / 2) / (out.d * Math.tan(camera.fov * Math.PI / 360));
   return true;
 }
-function lockable(e) { return e.alive && !e.hidden && !e.shielded && e.mesh.visible; }
+function lockable(e) { return e.alive && !e.hidden && !e.shielded && e.mesh.visible && (stormK < 0.5 || e.attached || e.mesh.position.lengthSq() < 300 * 300); }
 // line of sight against the terrain heightfield, sampled along the segment
 const losA = new V3(), losB = new V3();
 function blocked(a, b, margin = 1.5) {
@@ -2634,7 +2807,7 @@ const ntV = new V3();
 function nearestTarget(fromWorld, maxD, exclude, filter) {
   let bt = null, bd = maxD;
   for (const t of targets()) {
-    if (t === exclude || t.lockCount >= t.hp || t.kind === 'mirror' || (filter && !filter(t))) continue;
+    if (t === exclude || t.lockCount >= t.hp || t.kind === 'mirror' || t.kind === 'orb' || (filter && !filter(t))) continue;
     const d = t.mesh.getWorldPosition(ntV).distanceTo(fromWorld); if (d < bd) { bd = d; bt = t; }
   }
   return bt;
@@ -2684,7 +2857,7 @@ function burnCone(dt) {
 function arcFrom(src, wp, v) {
   let n = 0;
   for (const t of targets()) {
-    if (n >= 2 || t === src || t.kind === 'mirror') continue;
+    if (n >= 2 || t === src || t.kind === 'mirror' || t.kind === 'orb') continue;
     const p = t.mesh.getWorldPosition(new V3()); if (p.distanceTo(wp) > 70) continue;
     n++;
     for (let k = 0; k <= 8; k++) { const f = k / 8; glowP.spawn(lerp(wp.x, p.x, f) + rnd(-2, 2), lerp(wp.y, p.y, f) + rnd(-2, 2), lerp(wp.z, p.z, f) + rnd(-2, 2), rigT.x * S.speed, rigT.y * S.speed, rigT.z * S.speed, 1.2, 1.6, 2.6, 0.7, 0.12); }
@@ -2779,6 +2952,8 @@ function hit(L) {
 }
 function kill(t, v, wp, L) {
   t.alive = false;
+  if (t.kind === 'orb') { collectOrb(t, wp); return; }
+  if (t.kind === 'gold' && S.bonus) S.bonus.got++;
   if (t.kind !== 'bullet') comboKill();
   const mult = Math.max(1, v.n), pts = Math.round(t.pts * mult * (S.heatMul || 1) * comboMul(S.combo) * (S.route === 'storm' ? 1.4 : 1));
   if (LAND_KILL[ST.biome]) objTick('kind', 1, false, o => o.kind === t.kind);
@@ -3566,11 +3741,12 @@ function frame(now) {
     applyTOD(0.12);
   } else {
     S.t += dt;
-    const speedT = S.worm || S.elite ? 30 : S.boss && !S.boss.dead ? 14 : phase === 'clear' ? 40 : 70;
+    const speedT = S.worm || S.elite ? 30 : S.boss && !S.boss.dead ? 14 : phase === 'clear' ? 40 : S.event ? EV_SPEED[S.event.kind] : 70;
     S.speed = lerp(S.speed, speedT, Math.min(1, dt * 0.8));
     S.d = Math.min(RAIL_LEN - 60, S.d + S.speed * dt);
-    while (phase === 'play' && S.si < SCRIPT.length && S.d >= SCRIPT[S.si][0]) SCRIPT[S.si++][1]();
-    if (S.mode !== 'rush') director(dt);
+    while (phase === 'play' && !S.bonus && S.si < SCRIPT.length && S.d >= SCRIPT[S.si][0]) SCRIPT[S.si++][1]();
+    if (S.mode !== 'rush' && !S.bonus && S.event?.kind !== 'cavern') director(dt);
+    updBonus(dt);
     S.cleanT += dt; S.recentHits = Math.max(0, S.recentHits - dt / 12);
     S.shotTokens = Math.min(6, (S.shotTokens ?? 3) + dt * (1.8 + S.stageNo * 0.4 + (S.boss ? 1.2 : 0)) * DIFF_THREAT[M.diff || 'normal']);
     if (S.comboT > 0) { S.comboT -= dt; if (S.comboT <= 0) comboBreak(); }
@@ -3602,7 +3778,7 @@ function frame(now) {
     }
     lookX = lerp(lookX, tx, Math.min(1, dt * 2.5)); lookY = lerp(lookY, ty, Math.min(1, dt * 2.5));
     if (S.dead) { S.deadV += dt * 18; D.group.position.y -= S.deadV * dt; D.group.rotation.z += dt * 2.2; D.group.rotation.x += dt * 0.6; }
-    applyTOD(clamp(S.d / (BOSS_D + 300), 0, 1));
+    applyTOD(clamp(S.d / (BOSS_D + 300), 0, 1)); updEvent(dt);
     S.turning = Math.max(0, (S.turning || 0) - dt); S.roar = Math.max(0, S.roar - dt); S.hurt = Math.max(0, S.hurt - dt * 2.5);
     S.evolveT = Math.max(0, S.evolveT - dt); S.jaw = Math.max(0, S.jaw - dt * 3); if (S.evolveT > 1.45) cocoon();
     // charge builds while you hold a lock
@@ -3692,7 +3868,7 @@ function start(data) {
   try { const m = localStorage.getItem('skylance.mode'); if (m && MODE_LABEL[m]) setMode(m, false); } catch {}
   D.group.traverse(o => { if (o.isMesh) o.castShadow = true; });
   buildComposer(); setupShadows(); resize(); newGame(true); showOverlay('title');
-  if (location.hash === '#debug') window.__sky = { get S() { return S; }, get phase() { return phase; }, shotLog, turn, triggerBerserk, evolve, offerMutations, pickMutation, burnCone, applyLook, D, Music, get AC() { return AC; }, shoot, get cam() { return camera; }, sfx, fire, targets, damage, get rig() { return rig; }, get rigT() { return rigT; }, get rigR() { return rigR; }, get railTurn() { return railTurn; }, diver, phantom, bomber, linker, sniper, brute, wasps, groundGun, crystals, bats, maybeElite, spawnCarrier, stampede, M, renderTab, renderer, world, rockTex, aegis, splitter, mirror, nextStage, setMode, get BOSS_D() { return BOSS_D; }, get WORM_D() { return WORM_D; }, get ST() { return ST; }, jump(d) { S.d = d; while (S.si < SCRIPT.length && SCRIPT[S.si][0] < d - 50) S.si++; } };
+  if (location.hash === '#debug') window.__sky = { get S() { return S; }, get phase() { return phase; }, shotLog, turn, triggerBerserk, evolve, offerMutations, pickMutation, burnCone, applyLook, D, Music, get AC() { return AC; }, shoot, get cam() { return camera; }, sfx, fire, targets, damage, get rig() { return rig; }, get rigT() { return rigT; }, get rigR() { return rigR; }, get railTurn() { return railTurn; }, diver, phantom, bomber, linker, sniper, brute, wasps, groundGun, crystals, bats, maybeElite, spawnCarrier, stampede, M, renderTab, renderer, world, rockTex, aegis, splitter, mirror, nextStage, setMode, get BOSS_D() { return BOSS_D; }, get WORM_D() { return WORM_D; }, get ST() { return ST; }, get EVENT_D() { return EVENT_D; }, get stormK() { return stormK; }, startEvent, spawnOrb, startBonus, scene, jump(d) { S.d = d; while (S.si < SCRIPT.length && SCRIPT[S.si][0] < d - 50) S.si++; } };
   requestAnimationFrame(t => { lastT = t; frame(t); });
 }
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
