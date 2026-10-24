@@ -1030,7 +1030,7 @@ const D = (() => {
     bodyMat.emissive.setRGB(o.hurt * 0.9, o.hurt * 0.08, o.hurt * 0.08); headMat.emissive.copy(bodyMat.emissive);
 
     // spine: head leads, the rest trails in the wind
-    tmp.set(o.aimX * 1.1 + Math.sin(t * 1.3) * 0.15, 0.3 + Math.sin(t * 1.7) * 0.12 + o.roar * 1.0 + o.aimY * 0.6, -4.1 + o.roar * 0.5 + Math.abs(o.aimX) * 0.4);
+    tmp.set(o.aimX * 0.8 + Math.sin(t * 1.3) * 0.12, 0.3 + Math.sin(t * 1.7) * 0.12 + o.roar * 1.0 + o.aimY * 0.5, -4.1 + o.roar * 0.5 + Math.abs(o.aimX) * 0.25);
     pts[0].lerp(tmp, Math.min(1, dt * 5));
     for (let i = 1; i < N; i++) {
       const f = i / N;
@@ -3571,16 +3571,16 @@ function frame(now) {
     // lean and turn into the track's curves, nose up on climbs and down on dives, and a lazy weave when idle
     const weave = Math.sin(S.t * 0.55) * 0.6 + Math.sin(S.t * 1.3) * 0.25;
     if (!S.dead) D.group.position.x = lerp(D.group.position.x, (aimX * 2.4 + (ptr.down ? 0 : weave)) * ds, Math.min(1, dt * 3));
-    D.group.rotation.z = lerp(D.group.rotation.z, -aimX * 0.3 - bank * 0.9 - weave * 0.08, Math.min(1, dt * 4));
+    D.group.rotation.z = lerp(D.group.rotation.z, -aimX * 0.25 - railTurn * 0.6 - weave * 0.06, Math.min(1, dt * 4));
     if (!S.dead) {
-      D.group.rotation.y = lerp(D.group.rotation.y, railTurn * 0.7 - aimX * 0.15, Math.min(1, dt * 3));
+      D.group.rotation.y = lerp(D.group.rotation.y, -railTurn * 0.2 - aimX * 0.08, Math.min(1, dt * 3));
       D.group.rotation.x = lerp(D.group.rotation.x, railClimb * 0.45 + Math.sin(S.t * 0.9) * 0.04, Math.min(1, dt * 3));
     }
     // the head tracks your reticle while locking, otherwise the nearest enemy ahead, with an occasional glance about
     let tx = aimX, ty = aimY;
     if (!ptr.down) {
       let bd = 1e9; tx = Math.sin(S.t * 0.37) * 0.35; ty = Math.sin(S.t * 0.53) * 0.2;
-      for (const e of S.enemies) { if (!e.alive || e.kind === 'bullet' || !toScreen(e.mesh.getWorldPosition(tmpV), scr) || scr.x < 0 || scr.x > W || scr.y < 0 || scr.y > H || scr.d > 600) continue; if (scr.d < bd) { bd = scr.d; tx = (scr.x - W / 2) / (W / 2) * 0.8; ty = -(scr.y - H / 2) / (H / 2) * 0.6; } }
+      for (const e of S.enemies) { if (!e.alive || e.kind === 'bullet' || !toScreen(e.mesh.getWorldPosition(tmpV), scr) || scr.x < 0 || scr.x > W || scr.y < 0 || scr.y > H || scr.d > 600) continue; if (scr.d < bd) { bd = scr.d; tx = (scr.x - W / 2) / (W / 2) * 0.5; ty = -(scr.y - H / 2) / (H / 2) * 0.4; } }
     }
     lookX = lerp(lookX, tx, Math.min(1, dt * 2.5)); lookY = lerp(lookY, ty, Math.min(1, dt * 2.5));
     if (S.dead) { S.deadV += dt * 18; D.group.position.y -= S.deadV * dt; D.group.rotation.z += dt * 2.2; D.group.rotation.x += dt * 0.6; }
@@ -3674,7 +3674,7 @@ function start(data) {
   try { const m = localStorage.getItem('skylance.mode'); if (m && MODE_LABEL[m]) setMode(m, false); } catch {}
   D.group.traverse(o => { if (o.isMesh) o.castShadow = true; });
   buildComposer(); setupShadows(); resize(); newGame(true); showOverlay('title');
-  if (location.hash === '#debug') window.__sky = { get S() { return S; }, get phase() { return phase; }, shotLog, turn, triggerBerserk, evolve, offerMutations, pickMutation, burnCone, applyLook, D, Music, get AC() { return AC; }, sfx, fire, targets, damage, diver, phantom, bomber, linker, sniper, brute, wasps, groundGun, crystals, bats, maybeElite, spawnCarrier, stampede, M, renderTab, renderer, world, rockTex, aegis, splitter, mirror, nextStage, setMode, get BOSS_D() { return BOSS_D; }, get WORM_D() { return WORM_D; }, get ST() { return ST; }, jump(d) { S.d = d; while (S.si < SCRIPT.length && SCRIPT[S.si][0] < d - 50) S.si++; } };
+  if (location.hash === '#debug') window.__sky = { get S() { return S; }, get phase() { return phase; }, shotLog, turn, triggerBerserk, evolve, offerMutations, pickMutation, burnCone, applyLook, D, Music, get AC() { return AC; }, sfx, fire, targets, damage, get rig() { return rig; }, get rigT() { return rigT; }, get rigR() { return rigR; }, get railTurn() { return railTurn; }, diver, phantom, bomber, linker, sniper, brute, wasps, groundGun, crystals, bats, maybeElite, spawnCarrier, stampede, M, renderTab, renderer, world, rockTex, aegis, splitter, mirror, nextStage, setMode, get BOSS_D() { return BOSS_D; }, get WORM_D() { return WORM_D; }, get ST() { return ST; }, jump(d) { S.d = d; while (S.si < SCRIPT.length && SCRIPT[S.si][0] < d - 50) S.si++; } };
   requestAnimationFrame(t => { lastT = t; frame(t); });
 }
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
