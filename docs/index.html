@@ -171,7 +171,7 @@ button:focus-visible{outline:2px solid var(--lance);outline-offset:3px}
       <div class="shbody" id="sh-modes" hidden>
         <h3 class="sec">Mode</h3>
     <div class="forms" id="modes" role="radiogroup" aria-label="Mode">
-      <button role="radio" aria-checked="true" data-mode="story"><b>Story</b><span>3 stages, 3 lands</span></button>
+      <button role="radio" aria-checked="true" data-mode="story"><b>Story</b><span>5 stages, 5 lands</span></button>
       <button role="radio" aria-checked="false" data-mode="daily"><b>Daily</b><span>Today's seed</span></button>
       <button role="radio" aria-checked="false" data-mode="endless"><b>Endless</b><span>How far?</span></button>
       <button role="radio" aria-checked="false" data-mode="rush"><b>Boss Rush</b><span>Bosses only</span></button>
@@ -333,13 +333,30 @@ const TOD_EMBER = [
   { p: 0.8,  top: [0.1, 0.03, 0.05],  hor: [0.55, 0.15, 0.1],  sun: [0.9, 0.3, 0.15],   el: -0.01, li: 0.65, hs: [0.5, 0.3, 0.3],   hg: [0.4, 0.1, 0.05],  fog: [0.3, 0.1, 0.08],   cl: [0.4, 0.22, 0.2] },
   { p: 1,    top: [0.05, 0.01, 0.03], hor: [0.3, 0.06, 0.05],  sun: [0.9, 0.35, 0.2],   el: 0.25, li: 0.5,  hs: [0.4, 0.25, 0.25],  hg: [0.35, 0.08, 0.04], fog: [0.16, 0.05, 0.05], cl: [0.3, 0.15, 0.15] },
 ];
+const TOD_TEMPEST = [
+  { p: 0,    top: [0.28, 0.33, 0.4],  hor: [0.62, 0.64, 0.66], sun: [0.85, 0.88, 0.95], el: 0.35, li: 0.8,  hs: [0.55, 0.6, 0.68],  hg: [0.3, 0.3, 0.32],   fog: [0.52, 0.55, 0.6],  cl: [0.7, 0.72, 0.76] },
+  { p: 0.55, top: [0.18, 0.2, 0.3],   hor: [0.5, 0.45, 0.55],  sun: [0.9, 0.75, 0.7],   el: 0.12, li: 0.72, hs: [0.5, 0.5, 0.62],   hg: [0.26, 0.24, 0.3],  fog: [0.42, 0.4, 0.5],   cl: [0.55, 0.55, 0.65] },
+  { p: 0.8,  top: [0.08, 0.08, 0.16], hor: [0.25, 0.22, 0.35], sun: [0.7, 0.6, 0.9],    el: -0.01, li: 0.58, hs: [0.35, 0.35, 0.5], hg: [0.18, 0.16, 0.22], fog: [0.22, 0.2, 0.3],   cl: [0.4, 0.38, 0.5] },
+  { p: 1,    top: [0.03, 0.04, 0.08], hor: [0.1, 0.12, 0.2],   sun: [0.6, 0.7, 1.0],    el: 0.3,  li: 0.48, hs: [0.3, 0.34, 0.5],   hg: [0.12, 0.12, 0.16], fog: [0.09, 0.1, 0.16],  cl: [0.32, 0.34, 0.45] },
+];
+const TOD_AETHER = [
+  { p: 0,    top: [0.12, 0.08, 0.28], hor: [0.55, 0.35, 0.6],  sun: [1, 0.8, 0.95],     el: 0.25, li: 0.9,  hs: [0.6, 0.5, 0.8],    hg: [0.25, 0.18, 0.3],  fog: [0.45, 0.32, 0.55], cl: [0.85, 0.75, 0.95] },
+  { p: 0.55, top: [0.06, 0.04, 0.18], hor: [0.4, 0.22, 0.5],   sun: [0.9, 0.6, 1.0],    el: 0.1,  li: 0.78, hs: [0.5, 0.4, 0.75],   hg: [0.2, 0.12, 0.26],  fog: [0.32, 0.2, 0.42],  cl: [0.65, 0.55, 0.8] },
+  { p: 0.8,  top: [0.03, 0.02, 0.1],  hor: [0.2, 0.1, 0.32],   sun: [0.7, 0.5, 1.0],    el: -0.01, li: 0.62, hs: [0.38, 0.32, 0.6], hg: [0.14, 0.08, 0.2],  fog: [0.16, 0.1, 0.24],  cl: [0.45, 0.38, 0.6] },
+  { p: 1,    top: [0.01, 0.01, 0.05], hor: [0.08, 0.06, 0.18], sun: [0.75, 0.65, 1.0],  el: 0.3,  li: 0.52, hs: [0.35, 0.3, 0.6],   hg: [0.1, 0.06, 0.14],  fog: [0.06, 0.04, 0.12], cl: [0.3, 0.26, 0.45] },
+];
+// music: stage track and boss track per land (the newer lands borrow from the older ones)
 const BIOMES = {
   dusk:  { name: 'The Dusk Wastes', floor: [0.86, 0.63, 0.4], wet: [0.42, 0.33, 0.24], bands: [[0.66, 0.35, 0.22], [0.76, 0.47, 0.29], [0.57, 0.3, 0.2]], top: [0.86, 0.7, 0.5],
-           stone: 0x9a7458, spire: 0x8a5238, tod: TOD_DUSK, stars: true, liquid: 'water', liquidY: -4, worm: { name: 'Sandworm', color: 0xc89462, emissive: 0x2a1408 }, boss: 'Guardian' },
+           stone: 0x9a7458, spire: 0x8a5238, tod: TOD_DUSK, stars: true, liquid: 'water', liquidY: -4, worm: { name: 'Sandworm', color: 0xc89462, emissive: 0x2a1408 }, boss: 'Guardian', music: 'dusk', bossMusic: 'boss' },
   frost: { name: 'The Frost Sea', floor: [0.76, 0.81, 0.87], wet: [0.3, 0.4, 0.5], bands: [[0.55, 0.62, 0.72], [0.68, 0.75, 0.84], [0.45, 0.52, 0.64]], top: [0.86, 0.89, 0.93],
-           stone: 0x8fa4b8, spire: 0x6f86a0, tod: TOD_FROST, stars: true, liquid: 'ice', liquidY: -1.5, worm: { name: 'Ice Wyrm', color: 0xbfd8ea, emissive: 0x0a1a2a }, boss: 'Ice Leviathan' },
+           stone: 0x8fa4b8, spire: 0x6f86a0, tod: TOD_FROST, stars: true, liquid: 'ice', liquidY: -1.5, worm: { name: 'Ice Wyrm', color: 0xbfd8ea, emissive: 0x0a1a2a }, boss: 'Ice Leviathan', music: 'frost', bossMusic: 'boss' },
   ember: { name: 'The Ember Rift', floor: [0.25, 0.2, 0.2], wet: [0.5, 0.15, 0.05], bands: [[0.18, 0.15, 0.16], [0.28, 0.22, 0.22], [0.12, 0.1, 0.11]], top: [0.4, 0.3, 0.28],
-           stone: 0x3a3030, spire: 0x2a2224, tod: TOD_EMBER, stars: false, liquid: 'lava', liquidY: -1, worm: { name: 'Magma Worm', color: 0x4a2a20, emissive: 0x6a1a04 }, boss: 'Molten Colossus' },
+           stone: 0x3a3030, spire: 0x2a2224, tod: TOD_EMBER, stars: false, liquid: 'lava', liquidY: -1, worm: { name: 'Magma Worm', color: 0x4a2a20, emissive: 0x6a1a04 }, boss: 'Molten Colossus', music: 'ember', bossMusic: 'fireboss' },
+  tempest: { name: 'The Storm Crown', floor: [0.42, 0.46, 0.4], wet: [0.2, 0.26, 0.28], bands: [[0.32, 0.34, 0.38], [0.42, 0.44, 0.48], [0.26, 0.28, 0.32]], top: [0.52, 0.58, 0.46],
+           stone: 0x5a6068, spire: 0x464c56, tod: TOD_TEMPEST, stars: false, liquid: 'water', liquidY: -4, worm: { name: 'Storm Eel', color: 0x4a5a6e, emissive: 0x10204a }, boss: 'Thunderbird', music: 'dusk', bossMusic: 'boss' },
+  aether: { name: 'The Shattered Aether', floor: [0.34, 0.27, 0.44], wet: [0.2, 0.12, 0.35], bands: [[0.38, 0.3, 0.5], [0.5, 0.42, 0.62], [0.28, 0.22, 0.4]], top: [0.75, 0.7, 0.9],
+           stone: 0x5a4a78, spire: 0x7a6aa8, tod: TOD_AETHER, stars: true, liquid: 'void', liquidY: -3, worm: { name: 'Star Eater', color: 0x2e1e48, emissive: 0x3a1060 }, boss: 'Eclipse', music: 'title', bossMusic: 'fireboss' },
 };
 const ZB = 10, NB = 1300;
 const railXs = new Float32Array(NB), railYs = new Float32Array(NB), halfB = new Float32Array(NB), rivB = new Float32Array(NB), dB = new Float32Array(NB);
@@ -495,12 +512,12 @@ function buildStage(def) {
   const terrainMesh = new THREE.Mesh(tg, new THREE.MeshPhongMaterial({ vertexColors: true, map: rockTex, flatShading: true, shininess: 0, specular: 0x000000 }));
   terrainMesh.receiveShadow = true; g.add(terrainMesh);
   // water, ice or lava
-  const lava = B.liquid === 'lava', ice = B.liquid === 'ice';
+  const lava = B.liquid === 'lava', ice = B.liquid === 'ice', voidL = B.liquid === 'void';
   const lenZ = -z1 + 400;
-  for (const t of [LIQ.normal, LIQ.lava]) t.repeat.set(3400 / (lava ? 70 : 45), lenZ / (lava ? 70 : 45));
-  const waterMat = new THREE.MeshPhongMaterial({ color: lava ? 0x1a0500 : ice ? 0x8cb4d2 : 0x1f5560, specular: lava ? 0x331100 : ice ? 0x3a4550 : 0xbfd8e8, shininess: lava ? 8 : ice ? 30 : 110,
-    transparent: !lava, opacity: ice ? 0.95 : 0.9, normalMap: LIQ.normal, normalScale: new THREE.Vector2(ice ? 0.15 : lava ? 0.6 : 0.9, ice ? 0.15 : lava ? 0.6 : 0.9),
-    emissive: lava ? new THREE.Color(1.7, 0.9, 0.5) : new THREE.Color(0, 0, 0), emissiveMap: lava ? LIQ.lava : null });
+  for (const t of [LIQ.normal, LIQ.lava, LIQ.glow]) t.repeat.set(3400 / (lava || voidL ? 70 : 45), lenZ / (lava || voidL ? 70 : 45));
+  const waterMat = new THREE.MeshPhongMaterial({ color: lava ? 0x1a0500 : voidL ? 0x0a0614 : ice ? 0x8cb4d2 : 0x1f5560, specular: lava ? 0x331100 : voidL ? 0x6a4aa0 : ice ? 0x3a4550 : 0xbfd8e8, shininess: lava ? 8 : ice ? 30 : 110,
+    transparent: !lava && !voidL, opacity: ice ? 0.95 : 0.9, normalMap: LIQ.normal, normalScale: new THREE.Vector2(ice ? 0.15 : lava ? 0.6 : 0.9, ice ? 0.15 : lava ? 0.6 : 0.9),
+    emissive: lava ? new THREE.Color(1.7, 0.9, 0.5) : voidL ? new THREE.Color(0.55, 0.25, 1.4) : new THREE.Color(0, 0, 0), emissiveMap: lava ? LIQ.lava : voidL ? LIQ.glow : null });
   const water = new THREE.Mesh(new THREE.PlaneGeometry(3400, -z1 + 400), waterMat); water.rotation.x = -Math.PI / 2; water.position.set(0, B.liquidY, z1 / 2); g.add(water);
   world.waterMat = waterMat;
   const stoneMat = new THREE.MeshPhongMaterial({ color: B.stone, flatShading: true, shininess: 0 });
@@ -541,6 +558,21 @@ function buildStage(def) {
     const w = R(10, 26); dummy.scale.set(w, hh, w); dummy.updateMatrix(); spires.setMatrixAt(si++, dummy.matrix);
   }
   spires.count = si; g.add(spires);
+  // the Shattered Aether: broken islands hang in the sky beside the path, rock roots dangling beneath them
+  if (def.biome === 'aether') {
+    const rootGeo = new THREE.ConeGeometry(1, 1, 7); rootGeo.rotateX(Math.PI); rootGeo.translate(0, -0.5, 0);
+    const capGeo = new THREE.CylinderGeometry(1, 0.92, 1, 7); capGeo.translate(0, 0.5, 0);
+    const roots = new THREE.InstancedMesh(rootGeo, new THREE.MeshPhongMaterial({ color: B.spire, flatShading: true, shininess: 0 }), 90);
+    const caps = new THREE.InstancedMesh(capGeo, new THREE.MeshPhongMaterial({ color: new THREE.Color(...B.top), flatShading: true, shininess: 0 }), 90); let ii = 0;
+    for (let n = 0; n < 400 && ii < 90; n++) {
+      const z = -R(0, -z1 - 400), cx = railAt(railXs, z), xx = cx + (rng() < 0.5 ? -1 : 1) * R(110, 950), w = R(14, 55), y = railAt(railYs, z) + R(-30, 170);
+      if (y - w * 2 < terrainH(xx, z) + 10) continue;
+      dummy.position.set(xx, y, z); dummy.rotation.set(R(-0.1, 0.1), R(0, TAU), R(-0.1, 0.1));
+      dummy.scale.set(w, w * R(1.3, 2.4), w); dummy.updateMatrix(); roots.setMatrixAt(ii, dummy.matrix);
+      dummy.scale.set(w, w * 0.14, w); dummy.updateMatrix(); caps.setMatrixAt(ii++, dummy.matrix);
+    }
+    roots.count = caps.count = ii; g.add(roots, caps);
+  }
   // the cloud bank around the climb; each sprite thins out as the camera passes through
   if (climb) {
     const c0 = secD(climb) - 100, c1 = dOfZ(climb.z1) + 100;
@@ -584,6 +616,10 @@ const WAVES = [
   { w: 1.4, minL: 5,  key: 'phantom', land: 'frost', f: b => { const n = clamp(Math.round(b / 3), 2, 6); for (let i = 0; i < n; i++) phantom(); return n * 2.5; } },
   { w: 2.4, minL: 2,  key: 'bat', land: 'ember', f: b => { const n = clamp(Math.round(b), 5, 14); bats(n); return n; } },
   { w: 1.4, minL: 5,  key: 'salamander', land: 'ember', f: b => { groundGun('salamander'); if (b > 10) later(0.8, () => phase === 'play' && groundGun('salamander')); return 6; } },
+  { w: 2.4, minL: 2,  key: 'kite', land: 'tempest', f: b => { const n = clamp(Math.round(b), 5, 14); kites(n); return n; } },
+  { w: 1.4, minL: 5,  key: 'conduit', land: 'tempest', f: b => { groundGun('conduit'); if (b > 10) later(0.8, () => phase === 'play' && groundGun('conduit')); return 5; } },
+  { w: 2.4, minL: 2,  key: 'starling', land: 'aether', f: b => { const n = clamp(Math.round(b), 6, 14) & ~1; starlings(n); return n; } },
+  { w: 1.4, minL: 5,  key: 'phantom', land: 'aether', f: b => { const n = clamp(Math.round(b / 3), 2, 6); for (let i = 0; i < n; i++) phantom(); return n * 2.5; } },
 ];
 // build -> peak -> relax cycles; size grows with level, stage and difficulty, and eases off after hits
 function director(dt) {
@@ -676,11 +712,13 @@ function applyTOD(p) {
   world.starMat.opacity = ST.B.stars ? smooth(0.78, 0.95, p) : 0;
   if (ST.B.liquid === 'water') world.waterMat.color.setRGB(fog[0] * 0.25, fog[1] * 0.45 + 0.05, fog[2] * 0.5 + 0.08);
 }
-// ambient weather: drifting motes, snow in the Frost Sea, rising embers in the Ember Rift
+// ambient weather: drifting motes, snow in the Frost Sea, rising embers in the Ember Rift, rain over the Storm Crown, violet sparks off the void
 function ambient() {
   const liq = ST.B.liquid;
   if (Math.random() < 0.9) { const sx = (Math.random() < 0.5 ? -1 : 1) * rnd(14, 55); tmpV.set(sx, rnd(-25, 30), -rnd(60, 140)); rig.localToWorld(tmpV); glowP.spawn(tmpV.x, tmpV.y, tmpV.z, 0, 0, 0, 0.45, 0.43, 0.38, 0.45, 1.4, { alpha: 0.7 }); }
   if (liq === 'ice') for (let k = 0; k < 2; k++) { tmpV.set(rnd(-110, 110), rnd(-10, 60), -rnd(70, 230)); rig.localToWorld(tmpV); smokeP.spawn(tmpV.x, tmpV.y, tmpV.z, rnd(-3, 3), -rnd(6, 12), rnd(-3, 3), 0.95, 0.97, 1, rnd(0.25, 0.45), 3, { alpha: 0.75 }); }
+  if (ST.biome === 'tempest') for (let k = 0; k < 3; k++) { tmpV.set(rnd(-100, 100), rnd(0, 70), -rnd(20, 200)); rig.localToWorld(tmpV); smokeP.spawn(tmpV.x, tmpV.y, tmpV.z, rnd(-4, 4), -rnd(55, 75), rnd(-4, 4), 0.72, 0.78, 0.88, rnd(0.2, 0.35), 1.4, { alpha: 0.55 }); }
+  if (liq === 'void' && Math.random() < 0.8) { tmpV.set(rnd(-110, 110), rnd(-40, 30), -rnd(20, 220)); rig.localToWorld(tmpV); glowP.spawn(tmpV.x, tmpV.y, tmpV.z, rnd(-1, 1), rnd(3, 8), rnd(-1, 1), 0.9, 0.45, 1.6, rnd(0.5, 1.0), rnd(2, 3)); }
   if (liq === 'lava' && Math.random() < 0.8) { tmpV.set(rnd(-90, 90), rnd(-40, 10), -rnd(20, 200)); rig.localToWorld(tmpV); glowP.spawn(tmpV.x, tmpV.y, tmpV.z, rnd(-2, 2), rnd(6, 14), rnd(-2, 2), 2.2, 0.7, 0.15, rnd(0.5, 1.1), rnd(1.5, 2.5), { drag: 0.3 }); }
 }
 
@@ -794,7 +832,9 @@ const LIQ = (() => {
     const v = clamp((hgt[y * n + x] + 1) / 2, 0, 1), k = Math.pow(smooth(0.35, 0.8, v), 1.6);
     d[o] = 255 * clamp(0.25 + k * 1.1, 0, 1); d[o + 1] = 255 * clamp(k * k * 0.9, 0, 1); d[o + 2] = 255 * k * k * k * 0.3; d[o + 3] = 255;
   });
-  return { normal, lava };
+  // a neutral glow field the void tints violet
+  const glow = mk((d, o, x, y) => { const k = Math.pow(smooth(0.3, 0.85, clamp((hgt[y * n + x] + 1) / 2, 0, 1)), 1.4); d[o] = d[o + 1] = d[o + 2] = 255 * clamp(0.12 + k, 0, 1); d[o + 3] = 255; });
+  return { normal, lava, glow };
 })();
 // fine rock grain and strata, multiplied over the terrain's vertex colours
 const rockTex = canvasTex(256, (x, n) => {
@@ -1399,8 +1439,7 @@ const Music = {
   init() { this.gain = AC.createGain(); this.gain.gain.value = 0.75; this.gain.connect(musBus); },
   key() {
     if (this.mode === 'title' || !ST) return 'title';
-    if (this.mode === 'boss') return ST.biome === 'ember' ? 'fireboss' : 'boss';
-    return ST.biome;
+    return this.mode === 'boss' ? ST.B.bossMusic : ST.B.music;
   },
   // first and last audible samples, so encoder padding and silent tails never land inside a loop
   bounds(b) {
@@ -1451,18 +1490,18 @@ const Music = {
 
 // ======================= game state =======================
 const meta = {};
-const STORY = [{ seed: 101, biome: 'dusk' }, { seed: 202, biome: 'frost' }, { seed: 303, biome: 'ember' }];
-const BIOME_ORDER = ['dusk', 'frost', 'ember'];
+const STORY = [{ seed: 101, biome: 'dusk' }, { seed: 202, biome: 'frost' }, { seed: 303, biome: 'ember' }, { seed: 404, biome: 'tempest' }, { seed: 505, biome: 'aether' }];
+const BIOME_ORDER = STORY.map(s => s.biome);
 const dayKey = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 const dayNum = () => +dayKey().replace(/-/g, '');
 let mode = 'story', endlessSeed = 7;
 function stageDef(i) {
-  if (mode === 'daily') { const n = dayNum(); return { seed: n, biome: BIOME_ORDER[n % 3], stageNo: 0, diff: 0.4 }; }
-  if (mode === 'endless') return { seed: endlessSeed + i * 977, biome: BIOME_ORDER[i % 3], stageNo: i, diff: i * 0.45 };
-  if (mode === 'rush') return { seed: 500 + i * 131, biome: BIOME_ORDER[i % 3], stageNo: i, diff: 0.5 + i * 0.5 };
-  return { ...STORY[Math.min(i, 2)], stageNo: i, diff: 0.15 + i * 0.5 };
+  if (mode === 'daily') { const n = dayNum(); return { seed: n, biome: BIOME_ORDER[n % BIOME_ORDER.length], stageNo: 0, diff: 0.4 }; }
+  if (mode === 'endless') return { seed: endlessSeed + i * 977, biome: BIOME_ORDER[i % BIOME_ORDER.length], stageNo: i, diff: i * 0.45 };
+  if (mode === 'rush') return { seed: 500 + i * 131, biome: BIOME_ORDER[i % BIOME_ORDER.length], stageNo: i, diff: 0.5 + i * 0.5 };
+  return { ...STORY[Math.min(i, STORY.length - 1)], stageNo: i, diff: 0.15 + i * 0.5 };
 }
-const stageCount = () => mode === 'story' ? 3 : mode === 'daily' ? 1 : Infinity;
+const stageCount = () => mode === 'story' ? STORY.length : mode === 'daily' ? 1 : Infinity;
 const MODE_LABEL = { story: 'Story', daily: 'Daily flight', endless: 'Endless', rush: 'Boss Rush' };
 // Boss Rush skips the stage and starts each round just before its boss
 function rushToBoss() { S.d = BOSS_D - 260; S.si = SCRIPT.findIndex(e => e[0] >= BOSS_D - 5); if (S.si < 0) S.si = SCRIPT.length - 1; }
@@ -1732,11 +1771,13 @@ function shoot(fromLocal, T = 2.8, src = '?', off = null, size = 2.1) {
 
 // ---------- signature events: one per land, about 20 seconds mid-stage ----------
 let EVENT_D = 0;
-const EV_SPEED = { sandstorm: 55, cavern: 60, eruption: 95 };
+const EV_SPEED = { sandstorm: 55, cavern: 60, eruption: 95, lightning: 60, rift: 50 };
 const EVENTS = {
   dusk:  { kind: 'sandstorm', name: 'SANDSTORM',    dur: 22, info: 'Sandstorm: enemies loom out of the dust. Lock the shapes.' },
   frost: { kind: 'cavern',    name: 'ICE CAVERN',   dur: 20, info: 'Ice Cavern: crystal turrets line the walls.' },
   ember: { kind: 'eruption',  name: 'ERUPTION',     dur: 20, info: 'Eruption: lock the falling rocks before they land.' },
+  tempest: { kind: 'lightning', name: 'LIGHTNING STORM', dur: 22, info: 'Lightning storm: a crackle marks each strike. Lock the ball lightning it throws.' },
+  aether: { kind: 'rift',     name: 'RIFT STORM',   dur: 22, info: 'Rift storm: portals tear open around you. Break them before they flood the sky.' },
 };
 const CAVE_R = 34;
 G.rock = new THREE.DodecahedronGeometry(1, 0);
@@ -1774,8 +1815,8 @@ function endEvent() {
   S.score += bonus; if (clean) { M.embers += 6; saveMeta(); }
   popup(`${E.name} SURVIVED${clean ? ' · UNTOUCHED' : ''} +${bonus.toLocaleString()}${clean ? ' · +6◆' : ''}`, W / 2, H * 0.32, false, '#ffd27a'); sfx.full();
 }
-const sandCol = new THREE.Color(0.86, 0.66, 0.42);
-let stormK = 0;
+const sandCol = new THREE.Color(0.86, 0.66, 0.42), gloomCol = new THREE.Color(0.1, 0.11, 0.16), flashCol = new THREE.Color(0.85, 0.9, 1);
+let stormK = 0, gloomK = 0, skyFlash = 0;
 function updEvent(dt) {
   const E = S.event;
   // the sandstorm thickens and clears smoothly, even after the event ends
@@ -1785,6 +1826,12 @@ function updEvent(dt) {
     world.skyMat.uniforms.top.value.lerp(sandCol, stormK * 0.9); world.skyMat.uniforms.hor.value.lerp(sandCol, stormK);
     for (let k = 0; k < 4 * stormK; k++) { tmpV.set(rnd(-60, 60), rnd(-20, 40), -rnd(10, 120)); rig.localToWorld(tmpV); smokeP.spawn(tmpV.x, tmpV.y, tmpV.z, rigT.z * 60 + rnd(-10, 10), rnd(-2, 2), -rigT.x * 60, 0.78, 0.6, 0.4, rnd(2, 5), rnd(0.6, 1.2), { grow: 4, alpha: 0.45 }); }
   } else { scene.fog.near = 280; scene.fog.far = 2500; }
+  // the lightning storm darkens the sky; every strike lights it up for a moment
+  gloomK = lerp(gloomK, E && E.kind === 'lightning' && E.t < E.dur - 2 ? 1 : 0, Math.min(1, dt * 0.8));
+  if (gloomK > 0.01) { scene.fog.color.lerp(gloomCol, gloomK * 0.75); world.skyMat.uniforms.top.value.lerp(gloomCol, gloomK * 0.85); world.skyMat.uniforms.hor.value.lerp(gloomCol, gloomK * 0.6); world.sun.intensity *= 1 - 0.45 * gloomK; }
+  skyFlash = Math.max(0, skyFlash - dt * 4);
+  if (skyFlash > 0) { const k = Math.min(1, skyFlash) * (reduceMotion ? 0.3 : 0.7); scene.fog.color.lerp(flashCol, k * 0.6); world.skyMat.uniforms.top.value.lerp(flashCol, k * 0.5); world.skyMat.uniforms.hor.value.lerp(flashCol, k); world.hemi.intensity += k * 1.2; }
+  if (gloomK > 0.01 || skyFlash > 0) renderer.setClearColor(scene.fog.color);
   if (!E || phase !== 'play') return;
   E.t += dt;
   if (E.kind === 'sandstorm') {
@@ -1807,8 +1854,22 @@ function updEvent(dt) {
       const dz = rnd(170, 250), from = new V3(S.dl.x + rnd(-1, 1) * frontX(dz, 0.6), S.dl.y + rnd(60, 90), S.dl.z - dz);
       if (shoot(from, rnd(2.6, 3.2), 'a falling rock', new V3(rnd(-6, 6), rnd(-3, 3), rnd(-6, 6)), 2.5)) { const r = S.enemies[S.enemies.length - 1]; r.meteor = true; r.mesh.geometry = G.rock; r.mesh.material = Mt.lavaRock; }
     }
+  } else if (E.kind === 'lightning') {
+    E.rockT -= dt;
+    if (E.rockT <= 0 && E.t < E.dur - 3) { E.rockT = rnd(1.1, 1.6); strike('a lightning strike'); }
+    E.waveT -= dt;
+    if (E.waveT <= 0 && E.t < E.dur - 4) { E.waveT = rnd(3, 4); kites(5 + Math.min(5, S.lvl / 4 | 0)); }
+  } else if (E.kind === 'rift') {
+    // portals open in turn ahead, to the sides and behind; at most three at once
+    E.gunT -= dt;
+    const open = S.enemies.filter(e => e.alive && e.kind === 'rift').length;
+    if (E.gunT <= 0 && E.t < E.dur - 6 && open < 3) { E.gunT = rnd(3, 3.8); rift([0, 1, 0, 3, 2, 0, 1, 3][(E.n = (E.n || 0) + 1) % 8]); }
   }
-  if (E.t >= E.dur) { if (E.kind === 'eruption') world.waterMat.emissiveIntensity = 1; endEvent(); }
+  if (E.t >= E.dur) {
+    if (E.kind === 'eruption') world.waterMat.emissiveIntensity = 1;
+    if (E.kind === 'rift') for (const e of S.enemies) if (e.alive && e.kind === 'rift') { e.alive = false; puff(e.mesh.getWorldPosition(new V3())); }
+    endEvent();
+  }
 }
 // lava geyser: a column of fire and smoke erupting beside the track
 function geyser() {
@@ -1817,6 +1878,52 @@ function geyser() {
   for (let k = 0; k < 26; k++) glowP.spawn(tmpV.x + rnd(-6, 6), tmpV.y + rnd(0, 20), tmpV.z + rnd(-6, 6), rnd(-6, 6), rnd(40, 90), rnd(-6, 6), 1.5, rnd(0.45, 0.8), 0.1, rnd(1.5, 3), rnd(0.8, 1.4), { grav: -60, drag: 0.4 });
   for (let k = 0; k < 10; k++) smokeP.spawn(tmpV.x + rnd(-4, 4), tmpV.y + rnd(10, 40), tmpV.z + rnd(-4, 4), rnd(-3, 3), rnd(10, 25), rnd(-3, 3), 0.18, 0.12, 0.1, rnd(8, 14), rnd(1.5, 2.5), { grow: 10, alpha: 0.7 });
   if (Math.random() < 0.4) sfx.boom(1.2);
+}
+// a lightning bolt: a jagged trail of light from the clouds down to the strike point (world space)
+function bolt(from, to) {
+  let px = from.x, py = from.y, pz = from.z, ox = 0, oz = 0; const n = 22;
+  for (let i = 1; i <= n; i++) {
+    const f = i / n; ox = i < n ? clamp(ox + rnd(-14, 14), -35, 35) : 0; oz = i < n ? clamp(oz + rnd(-14, 14), -35, 35) : 0;
+    const x = lerp(from.x, to.x, f) + ox, y = lerp(from.y, to.y, f), z = lerp(from.z, to.z, f) + oz;
+    for (let k = 0; k < 7; k++) { const t = k / 7; glowP.spawn(lerp(px, x, t), lerp(py, y, t), lerp(pz, z, t), 0, 0, 0, 1.5, 1.8, 2.6, 6, 0.28); }
+    if (i === 6 || i === 11 || i === 16) { let bx = x, by = y, bz = z; for (let k = 0; k < 14; k++) { bx += rnd(-6, 6); by -= rnd(2, 5); bz += rnd(-6, 6); glowP.spawn(bx, by, bz, 0, 0, 0, 1.0, 1.3, 2.2, 3.5, 0.2); } }
+    px = x; py = y; pz = z;
+  }
+}
+// a strike: a crackle marks the spot (rig-local) for a moment, then the bolt lands and throws lockable ball lightning at you
+function strike(src, at) {
+  if (!at) { const dz = rnd(190, 280); at = new V3(S.dl.x + (Math.random() < 0.5 ? -1 : 1) * rnd(20, frontX(dz, 0.55)), S.dl.y + rnd(-15, 25), S.dl.z - dz); }
+  for (let k = 0; k < 8; k++) later(k * 0.09, () => { if (phase !== 'play') return; rig.localToWorld(tmpV.copy(at)); for (let j = 0; j < 3; j++) glowP.spawn(tmpV.x + rnd(-4, 4), tmpV.y + rnd(-4, 4), tmpV.z + rnd(-4, 4), rnd(-10, 10), rnd(-10, 10), rnd(-10, 10), 0.9, 1.5, 2.6, 3.2, 0.22, { drag: 2 }); });
+  later(0.75, () => {
+    if (phase !== 'play') return;
+    const w = rig.localToWorld(at.clone());
+    bolt(w.clone().add(new V3(rnd(-50, 50), 280, rnd(-50, 50))), w);
+    skyFlash = 1; S.flash = Math.max(S.flash, reduceMotion ? 0 : 0.12); sfx.boom(1.6); noise(0.16, 0.6, 1800, 200);
+    barrage(at.clone(), 3, 8, 2.6, src);
+  });
+}
+// rift portal: opens in one quadrant around you (0 ahead, 1 right, 2 behind, 3 left), fires and pours drones until broken
+Mt.riftRim = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.8, 0.7, 2.6) });
+Mt.riftVoid = new THREE.MeshBasicMaterial({ color: 0x06020e, side: THREE.DoubleSide });
+function rift(q) {
+  const g = new THREE.Group(), rim = new THREE.Mesh(G.ring, Mt.riftRim); rim.scale.setScalar(2.2); g.add(rim);
+  const disc = new THREE.Mesh(G.disc, Mt.riftVoid); disc.scale.setScalar(2.1); g.add(disc);
+  const coreMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(2.4, 1.2, 2.8) }), core = new THREE.Mesh(G.orb, coreMat); core.scale.setScalar(0.9); core.position.z = 0.4; g.add(core);
+  g.scale.set(0.01, 0.01, 0.01);
+  const a = q * Math.PI / 2 + rnd(-0.15, 0.15), R = rnd(230, 270), y = S.dl.y + rnd(5, 35);
+  const pos = new V3(S.dl.x + Math.sin(a) * R, y, S.dl.z - Math.cos(a) * R);
+  addEnemy('rift', g, { name: 'a rift', q, pos, rim, coreMat, fireT: rnd(1.4, 2), spawnT: 1.2, upd(e, dt) {
+    const m = e.mesh, open = smooth(0, 0.8, e.age) * (1 - smooth(11, 11.6, e.age));
+    m.scale.setScalar(Math.max(0.01, open * 4)); m.position.copy(e.pos); m.lookAt(D.group.getWorldPosition(tmpV));
+    e.hidden = open < 0.7; e.rim.rotation.z += dt * 2;
+    m.getWorldPosition(tmpV2); if (Math.random() < 0.6) glowP.spawn(tmpV2.x + rnd(-8, 8), tmpV2.y + rnd(-8, 8), tmpV2.z + rnd(-8, 8), rnd(-4, 4), rnd(-4, 4), rnd(-4, 4), 1.2, 0.5, 1.8, 2.5, 0.5);
+    if (phase !== 'play' || open < 0.9) { if (e.age > 11.6) e.alive = false; return; }
+    e.fireT -= dt; e.charge = clamp(1 - e.fireT / 0.6, 0, 1); e.coreMat.color.setRGB(2.4 + e.charge, 1.2 + e.charge * 1.5, 2.8);
+    if (e.fireT <= 0) e.fireT = barrage(m.position.clone(), 2, 6, 2.7, 'a rift') ? (e.q % 2 ? 1.9 : 2.6) : 0.4;
+    // ahead and behind, the rift spills drones that stream past you
+    e.spawnT -= dt;
+    if (e.spawnT <= 0 && e.q % 2 === 0) { e.spawnT = 1.8; const hue = rh(), back = e.q === 2; for (let i = 0; i < 3; i++) later(i * 0.25, () => { if (phase === 'play' && e.alive) drone({ hue, bx: e.pos.x + rnd(-6, 6), by: e.pos.y + rnd(-6, 6), a0: -e.pos.z, va: back ? rnd(80, 95) : -rnd(80, 95), amp: 3 }); }); }
+  } });
 }
 // crystal turrets grow out of the cavern walls ahead and stay put as you fly past
 Object.assign(ET, { icegun: { hp: 2, r: 5.5, pts: 500, threat: true }, orb: { hp: 1, r: 5, pts: 0 }, gold: { hp: 1, r: 5, pts: 300 } });
@@ -1905,6 +2012,9 @@ Mt.sand = addRim(new THREE.MeshStandardMaterial({ color: 0xb08a5a, roughness: 0.
 Mt.ice = addRim(new THREE.MeshStandardMaterial({ color: 0xa8d8f0, emissive: 0x204060, roughness: 0.2, metalness: 0.2, flatShading: true, transparent: true, opacity: 0.9 }));
 Mt.bat = addRim(new THREE.MeshStandardMaterial({ color: 0x3a1210, emissive: 0x401004, roughness: 0.7, flatShading: true, side: THREE.DoubleSide }));
 Mt.sala = addRim(new THREE.MeshStandardMaterial({ color: 0x2a1410, emissive: 0x5a1a04, roughness: 0.8, flatShading: true }));
+Mt.kite = addRim(new THREE.MeshStandardMaterial({ color: 0x3a4a66, emissive: 0x0c1838, roughness: 0.5, flatShading: true, side: THREE.DoubleSide }));
+Mt.spark = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.8, 1.6, 2.6) });
+Mt.star = addRim(new THREE.MeshStandardMaterial({ color: 0xe8d8ff, emissive: 0x6a40c0, emissiveIntensity: 0.9, roughness: 0.2, metalness: 0.3, flatShading: true }));
 G.tether = new THREE.TorusGeometry(1.4, 0.12, 6, 20);
 Object.assign(ET, {
   diver:   { hp: 1, r: 5,   pts: 250, threat: true },
@@ -1918,7 +2028,16 @@ Object.assign(ET, {
   crystal: { hp: 2, r: 6,   pts: 300 },
   bat:     { hp: 1, r: 4,   pts: 140 },
   salamander: { hp: 3, r: 7, pts: 550, threat: true },
+  kite:    { hp: 1, r: 4.5, pts: 140 },
+  conduit: { hp: 2, r: 6,   pts: 500, threat: true },
+  starling:{ hp: 1, r: 4,   pts: 150 },
+  rift:    { hp: 4, r: 10,  pts: 1500, threat: true },
+  plume:   { hp: 4, r: 6,   pts: 1200, threat: true },
+  tbheart: { hp: 14, r: 10, pts: 8000, threat: true },
+  star:    { hp: 4, r: 6,   pts: 1200, threat: true },
+  eclipse: { hp: 20, r: 12, pts: 12000, threat: true },
 });
+for (const k of ['rift', 'plume', 'tbheart', 'star', 'eclipse']) NO_RANK.add(k);
 const NEW_INFO = {
   diver: 'Diver: it aims along a red line, then dives at you. Lock it before it lands.',
   phantom: 'Phantom: it flickers out of sight. Lock it while it is visible.',
@@ -1931,6 +2050,10 @@ const NEW_INFO = {
   crystal: 'Ice Crystal: shatters into shards when it breaks.',
   bat: 'Magma Bat: drops a burning ember when it dies. Lock the ember too.',
   salamander: 'Salamander: crawls the lava and spits fire upward.',
+  kite: 'Storm Kites: they glide in a long snaking string. Sweep the whole string.',
+  conduit: 'Conduit: a lightning rod that rises from the rock and fires upward.',
+  starling: 'Starlings: they fly in orbiting pairs.',
+  rift: 'Rift: a portal that fires and spills drones. Break it to seal it.',
 };
 function introduce(kind) {
   S.seenKinds ||= new Set();
@@ -2056,19 +2179,22 @@ function wasps(n) {
 }
 // Burrower (desert) / Salamander (lava): rises from the ground, fires upward, sinks again
 function groundGun(kind) {
-  const sala = kind === 'salamander', g = new THREE.Group();
-  if (sala) { const b = new THREE.Mesh(G.wormSeg, Mt.sala); b.scale.set(1.4, 0.8, 2.6); g.add(b); for (let i = 0; i < 4; i++) { const s = new THREE.Mesh(G.spike, Mt.sala); s.position.set(0, 0.6, -1.5 + i); s.scale.set(0.5, 0.8, 0.5); g.add(s); } }
+  const sala = kind === 'salamander', cond = kind === 'conduit', g = new THREE.Group();
+  if (cond) { const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.8, 4, 6), Mt.hull); rod.position.y = 0.6; g.add(rod); for (let i = 0; i < 3; i++) { const c = new THREE.Mesh(G.ring, Mt.rim); c.rotation.x = Math.PI / 2; c.scale.setScalar(0.45 - i * 0.08); c.position.y = -0.6 + i * 0.9; g.add(c); } }
+  else if (sala) { const b = new THREE.Mesh(G.wormSeg, Mt.sala); b.scale.set(1.4, 0.8, 2.6); g.add(b); for (let i = 0; i < 4; i++) { const s = new THREE.Mesh(G.spike, Mt.sala); s.position.set(0, 0.6, -1.5 + i); s.scale.set(0.5, 0.8, 0.5); g.add(s); } }
   else { const b = new THREE.Mesh(new THREE.ConeGeometry(1.4, 2.4, 6), Mt.sand); g.add(b); }
-  const eye = new THREE.Mesh(G.orb, Mt.meteor); eye.scale.setScalar(0.55); eye.position.set(0, sala ? 0.5 : 0.9, 0.8); g.add(eye);
+  const eye = new THREE.Mesh(G.orb, cond ? Mt.spark : Mt.meteor); eye.scale.setScalar(0.55); eye.position.set(0, cond ? 2.8 : sala ? 0.5 : 0.9, cond ? 0 : 0.8); g.add(eye);
+  const dust = sala ? [0.3, 0.15, 0.1] : cond ? [0.45, 0.5, 0.58] : [0.75, 0.6, 0.42];
   g.scale.setScalar(3.2);
   const gY = groundLocalY(), lim = Math.max(40, canyonHalf(rig.position.z) * 0.6);
   const ga = rnd(320, 420);
   addEnemy(kind, g, { x: rnd(-1, 1) * Math.min(lim, frontX(ga - 100)), a: ga, gY, fireT: 1.6, upd(e, dt) {
     const up = smooth(0, 1, e.age) * (1 - smooth(7, 8, e.age)), m = e.mesh;
     e.a -= 12 * dt; m.position.set(e.x, e.gY - 8 + up * 14, -e.a); e.hidden = up < 0.4;
-    if (up > 0.9 && Math.random() < 0.3) { m.getWorldPosition(tmpV2); smokeP.spawn(tmpV2.x, tmpV2.y - 3, tmpV2.z, rnd(-4, 4), rnd(4, 10), rnd(-4, 4), sala ? 0.3 : 0.75, sala ? 0.15 : 0.6, sala ? 0.1 : 0.42, 6, 1, { grow: 6, alpha: 0.6 }); }
+    if (up > 0.9 && Math.random() < 0.3) { m.getWorldPosition(tmpV2); smokeP.spawn(tmpV2.x, tmpV2.y - 3, tmpV2.z, rnd(-4, 4), rnd(4, 10), rnd(-4, 4), dust[0], dust[1], dust[2], 6, 1, { grow: 6, alpha: 0.6 }); }
+    if (cond && up > 0.9 && Math.random() < 0.5) { m.getWorldPosition(tmpV2); glowP.spawn(tmpV2.x + rnd(-3, 3), tmpV2.y + 8 + rnd(-3, 3), tmpV2.z + rnd(-3, 3), rnd(-12, 12), rnd(-12, 12), rnd(-12, 12), 0.9, 1.5, 2.6, 2, 0.15); }
     e.fireT -= dt;
-    if (e.fireT <= 0 && up > 0.9 && phase === 'play') { barrage(m.position.clone().add(new V3(0, 4, 0)), 2, 7, 2.6, sala ? 'a Salamander' : 'a Burrower', sala ? 3.1 : 2.1); e.fireT = 2.4; }
+    if (e.fireT <= 0 && up > 0.9 && phase === 'play') { barrage(m.position.clone().add(new V3(0, cond ? 9 : 4, 0)), 2, 7, 2.6, sala ? 'a Salamander' : cond ? 'a Conduit' : 'a Burrower', sala ? 3.1 : 2.1); e.fireT = 2.4; }
     if (e.age > 8.2) e.alive = false;
   } });
 }
@@ -2096,8 +2222,43 @@ function bats(n) {
     } });
   }
 }
+// Storm Kites glide in one long string that snakes across your path
+function kites(n) {
+  const w = visHalfW(340) * 0.75, hue = rh(), side = Math.random() < 0.5 ? 1 : -1, by = rnd(15, 45);
+  for (let i = 0; i < n; i++) {
+    const g = new THREE.Group(), b = new THREE.Mesh(G.crystal, Mt.kite); b.scale.set(1.1, 0.25, 1.2); b.rotation.x = Math.PI / 2; g.add(b);
+    for (let k = 1; k <= 3; k++) { const t = new THREE.Mesh(G.orb, Mt.eyes[hue]); t.scale.setScalar(0.28 - k * 0.05); t.position.z = -1.4 - k * 0.9; g.add(t); }
+    const eye = new THREE.Mesh(G.orb, Mt.spark); eye.scale.setScalar(0.3); eye.position.z = 1.2; g.add(eye);
+    g.scale.setScalar(2.4);
+    addEnemy('kite', g, { hue, w, side, by, a0: 660 + i * 30, va: -rnd(88, 96), ph: -i * 0.42, upd(e, dt) {
+      const ahead = e.a0 + e.va * e.age * (e.swift ? 1.4 : 1), m = e.mesh, s = e.age * 1.15 + e.ph;
+      m.position.set(e.side * Math.sin(s) * e.w, e.by + Math.sin(s * 2) * 10, -ahead);
+      m.rotation.set(0, Math.PI + Math.cos(s) * e.side * 0.8, -Math.cos(s) * e.side * 0.7);
+      if (ahead < -30) e.alive = false;
+    } });
+  }
+}
+// Starlings fly in orbiting pairs
+function starlings(n) {
+  const w = visHalfW(320);
+  for (let i = 0; i < n; i += 2) {
+    const hue = rh(), cx = rnd(-0.75, 0.75) * w, cy = rnd(10, 50), a0 = rnd(620, 760), va = -rnd(80, 95), ph = rnd(0, TAU);
+    for (const j of [0, 1]) {
+      const g = new THREE.Group(), c = new THREE.Mesh(G.crystal, Mt.star); c.scale.set(0.8, 0.8, 0.8); g.add(c);
+      const eye = new THREE.Mesh(G.orb, Mt.eyes[hue]); eye.scale.setScalar(0.4); g.add(eye);
+      g.scale.setScalar(2.2);
+      addEnemy('starling', g, { hue, cx, cy, a0, va, ph: ph + j * Math.PI, upd(e, dt) {
+        const ahead = e.a0 + e.va * e.age * (e.swift ? 1.4 : 1), s = e.age * 3.2 + e.ph, m = e.mesh;
+        m.position.set(e.cx + Math.sin(e.age * 0.9) * 20 + Math.cos(s) * 11, e.cy + Math.sin(s) * 7, -ahead + Math.sin(s) * 6);
+        m.rotation.y += dt * 4;
+        if (Math.random() < 0.35) { m.getWorldPosition(tmpV2); glowP.spawn(tmpV2.x, tmpV2.y, tmpV2.z, 0, 0, 0, 1.0, 0.6, 1.6, 1.6, 0.4, { grow: -3 }); }
+        if (ahead < -30) e.alive = false;
+      } });
+    }
+  }
+}
 // ---- elites: gold halo, double score and growth, and one trait ----
-const ELITE_OK = new Set(['drone', 'darter', 'wasp', 'bat', 'crystal', 'gunner', 'aegis', 'diver', 'phantom', 'bomber', 'brute', 'splitter']);
+const ELITE_OK = new Set(['drone', 'darter', 'wasp', 'bat', 'crystal', 'kite', 'starling', 'gunner', 'aegis', 'diver', 'phantom', 'bomber', 'brute', 'splitter']);
 const AFFIX = ['shielded', 'swift', 'splitting', 'vengeful'];
 function maybeElite(e) {
   if (!S || S.lvl < 8 || !ELITE_OK.has(e.kind) || e.tether || Math.random() > Math.min(0.3, (0.04 + 0.008 * S.lvl) * (S.route === 'storm' ? 2 : 1))) return;
@@ -2236,7 +2397,7 @@ function stampede(q) {
 // ---------- bosses: one per land ----------
 // every boss provides: g (group under the rig), pos (rig-local position for radar), maxHp, hpNow(), isDefeated(), boomAt(out), update(dt), onPartKilled(t)
 function spawnBoss() {
-  ({ dusk: spawnGuardian, frost: spawnLeviathan, ember: spawnColossus }[ST.biome] || spawnGuardian)();
+  ({ dusk: spawnGuardian, frost: spawnLeviathan, ember: spawnColossus, tempest: spawnThunderbird, aether: spawnEclipse }[ST.biome] || spawnGuardian)();
   popup(`WARNING · ${ST.B.boss.toUpperCase()}`, W / 2, H * 0.3, true, '#ff5d7d'); sfx.warn(); buzz([100, 60, 100]);
   Music.mode = 'boss';
 }
@@ -2484,8 +2645,177 @@ function spawnColossus() {
   };
 }
 
+// ===== Storm Crown: the Thunderbird (circles you on vast wings, calls lightning; break its plumes, then its storm heart) =====
+const stormHide = addRim(new THREE.MeshStandardMaterial({ color: 0x2a3448, roughness: 0.6, metalness: 0.15, flatShading: true, emissive: 0x0a1028 }));
+const stormFeather = addRim(new THREE.MeshStandardMaterial({ color: 0x46587a, roughness: 0.55, metalness: 0.1, flatShading: true, emissive: 0x101c3a, side: THREE.DoubleSide }));
+function spawnThunderbird() {
+  const g = new THREE.Group(); rig.add(g);
+  const st = S.stageNo, body = new THREE.Group(); g.add(body);
+  const box = new THREE.BoxGeometry(1, 1, 1), dod = new THREE.DodecahedronGeometry(1, 0);
+  const torso = new THREE.Mesh(dod, stormHide); torso.scale.set(9, 7, 20); body.add(torso);
+  const neck = new THREE.Mesh(dod, stormHide); neck.scale.set(5, 5, 8); neck.position.set(0, 2, 17); body.add(neck);
+  const head = new THREE.Mesh(new THREE.IcosahedronGeometry(1, 0), stormHide); head.scale.set(5.5, 5, 7); head.position.set(0, 4, 25); body.add(head);
+  const beak = new THREE.Mesh(G.darter, Mt.rim); beak.scale.set(2, 2, 2.4); beak.position.set(0, 3, 32); body.add(beak);
+  for (let k = 0; k < 5; k++) { const c = new THREE.Mesh(G.spike, stormFeather); c.position.set((k - 2) * 1.6, 7.5, 22 - Math.abs(k - 2)); c.rotation.x = -1.1; c.scale.set(2.5, 9 - Math.abs(k - 2) * 1.5, 2); body.add(c); }
+  const eyeMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.8, 1.8, 2.6) });
+  for (const s of [-1, 1]) { const e = new THREE.Mesh(G.orb, eyeMat); e.scale.setScalar(0.9); e.position.set(s * 3.6, 5.2, 28); body.add(e); }
+  for (let k = 0; k < 5; k++) { const t = new THREE.Mesh(G.spike, stormFeather); t.position.set(0, 0, -16); t.rotation.set(-Math.PI / 2, 0, (k - 2) * 0.3); t.scale.set(4, 18, 1.5); body.add(t); }
+  const plumes = [];
+  const wings = [-1, 1].map(s => {
+    const shoulder = new THREE.Group(); shoulder.position.set(s * 7, 3, 4); body.add(shoulder);
+    const inner = new THREE.Mesh(box, stormFeather); inner.scale.set(22, 1.4, 16); inner.position.set(s * 11, 0, 0); shoulder.add(inner);
+    const elbow = new THREE.Group(); elbow.position.set(s * 22, 0, 0); shoulder.add(elbow);
+    const mid = new THREE.Mesh(box, stormFeather); mid.scale.set(18, 1.1, 13); mid.position.set(s * 9, 0, -1); elbow.add(mid);
+    const tip = new THREE.Mesh(box, stormFeather); tip.scale.set(14, 0.8, 8); tip.position.set(s * 24, 0, -3); elbow.add(tip);
+    for (let k = 0; k < 6; k++) { const f = new THREE.Mesh(G.spike, stormFeather); f.position.set(s * (4 + k * 5.5), 0, -6 - k * 0.4); f.rotation.x = -Math.PI / 2; f.scale.set(3, 9 + k, 1.2); elbow.add(f); }
+    for (const [par, x] of [[shoulder, s * 15], [elbow, s * 14]]) {
+      const mat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.8, 1.6, 2.6) });
+      const m = new THREE.Mesh(G.orb, mat); m.scale.setScalar(3.4); m.position.set(x, 0, 7); par.add(m);
+      plumes.push(addEnemy('plume', m, { upd: null, mat, hp: 4 + (st >> 1) }, par));
+    }
+    return { s, shoulder, elbow };
+  });
+  const hmat = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.2, 2.0, 2.8) });
+  const hm = new THREE.Mesh(G.orb, hmat); hm.scale.setScalar(5.5); hm.position.set(0, -3, 12); body.add(hm);
+  const heart = addEnemy('tbheart', hm, { upd: null, shielded: true, mat: hmat, hp: 14 + 3 * st }, body);
+  const shield = new THREE.Mesh(G.orb, Mt.shield); shield.scale.setScalar(9.5); shield.position.copy(hm.position); body.add(shield);
+  const all = [...plumes, heart], tl = new V3(), ahead = new V3();
+  S.boss = {
+    g, pos: g.position, age: 0, R: 900, th: rnd(-0.3, 0.3), dirn: Math.random() < 0.5 ? 1 : -1, turnT: 12, fireT: 4, callT: 7, calling: 0, minionT: 10, spiral: 0, dead: false,
+    maxHp: sumHp(all),
+    hpNow() { return sumHp(all); },
+    isDefeated() { return !heart.alive; },
+    boomAt(out) { body.getWorldPosition(out); out.x += rnd(-40, 40); out.y += rnd(-10, 14); out.z += rnd(-20, 20); return out; },
+    onPartKilled(t) { if (t.kind === 'plume') { t.mesh.visible = false; sfx.boom(1.8); } },
+    update(dt) {
+      this.age += dt;
+      const enraged = !heart.shielded;
+      this.R = lerp(this.R, 200, Math.min(1, dt * 0.4));
+      // it glides slowly while you can see it and sweeps fast through the blind angles: follow it with the view
+      if (this.R < 320) this.th += dt * (enraged ? 0.3 : 0.22) * (inSomeView(g.position, 0.7) ? 0.35 : 1.5) * this.dirn;
+      this.turnT -= dt; if (this.turnT <= 0) { this.turnT = rnd(10, 15); this.dirn *= -1; sfx.turn(); }
+      g.position.set(Math.sin(this.th) * this.R, 48 + Math.sin(this.age * 0.8) * 14, -Math.cos(this.th) * this.R);
+      // it rears up with its wings spread toward you, leaning into the circle, and turns full on while calling lightning
+      ahead.set(Math.cos(this.th) * this.dirn, 0, Math.sin(this.th) * this.dirn).multiplyScalar(60).add(g.position).lerp(S.dl, this.calling ? 0.95 : 0.75);
+      g.lookAt(rig.localToWorld(ahead)); g.rotateX(-1.05 + Math.sin(this.age * 0.9) * 0.1); g.rotateZ(this.dirn * 0.2);
+      const flap = Math.sin(this.age * (enraged ? 2.8 : 2.1));
+      for (const w of wings) { w.shoulder.rotation.z = w.s * flap * 0.35; w.elbow.rotation.z = w.s * Math.sin(this.age * (enraged ? 2.8 : 2.1) - 0.7) * 0.3; }
+      for (const p of plumes) if (p.alive) { const b = 1 + 0.25 * Math.sin(this.age * 7 + p.mesh.position.x); p.mat.color.setRGB(0.8 * b, 1.6 * b, 2.6 * b); if (Math.random() < 0.25) { p.mesh.getWorldPosition(tmpV2); glowP.spawn(tmpV2.x, tmpV2.y, tmpV2.z, rnd(-10, 10), rnd(-10, 10), rnd(-10, 10), 0.9, 1.5, 2.6, 2.5, 0.15); } }
+      heart.shielded = plumes.some(p => p.alive); shield.visible = heart.shielded;
+      const tel = this.callT < 0.9;
+      eyeMat.color.setRGB(tel && Math.sin(this.age * 40) > 0 ? 3 : 0.8, tel ? 3 : 1.8, tel ? 3 : 2.6);
+      hmat.color.setRGB(enraged ? 2.2 : 1.2, enraged ? 2.4 : 2.0, 2.8);
+      if (phase !== 'play' || this.R > 350) return;
+      this.fireT -= dt;
+      if (this.fireT <= 0) {
+        const live = plumes.filter(p => p.alive), src = live.length ? live.slice(0, 2) : [heart];
+        let fired = 0; for (const p of src) fired += barrage(toLocal(p.mesh, tl), enraged ? 5 : 3, 8, 2.7, 'the Thunderbird');
+        this.fireT = fired ? (enraged ? 2.3 : 2.9) : 0.4; if (fired) sfx.pew(true);
+        if (enraged && fired && ++this.spiral % 2 === 0) for (let k = 0; k < 6; k++) later(0.13 * k, () => { if (heart.alive) shoot(toLocal(hm, tl), 2.6, 'the Thunderbird', new V3(Math.cos(k) * 10, Math.sin(k) * 6, 0)); });
+      }
+      // it screams, its eyes flare, and lightning comes down around you
+      this.callT -= dt;
+      if (this.callT <= 0.9 && !this.telS) { this.telS = true; sfx.telegraph(); }
+      if (this.callT <= 0) {
+        this.calling = 1.6; this.telS = false; this.callT = enraged ? 6 : 8.5;
+        const n = enraged ? 3 : 2; for (let k = 0; k < n; k++) later(k * 0.45, () => { if (phase === 'play' && !this.dead) strike('the Thunderbird’s lightning'); });
+      }
+      if (this.calling) this.calling = Math.max(0, this.calling - dt);
+      this.minionT -= dt;
+      if (this.minionT <= 0) { kites(5 + st); this.minionT = enraged ? 9 : 12; }
+    },
+  };
+}
+
+// ===== Shattered Aether: the Eclipse (a dead sun ringed by burning stars; it blinks between your views) =====
+const eclipseBlack = new THREE.MeshBasicMaterial({ color: 0x030008 });
+const coronaMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.6, 0.8, 2.2), transparent: true, opacity: 0.75, blending: THREE.AdditiveBlending, depthWrite: false });
+function spawnEclipse() {
+  const g = new THREE.Group(); rig.add(g);
+  const st = S.stageNo, body = new THREE.Group(); g.add(body);
+  coronaMat.color.setRGB(1.6, 0.8, 2.2);
+  const sun = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16), eclipseBlack); sun.scale.setScalar(18); body.add(sun);
+  const corona = new THREE.Mesh(new THREE.TorusGeometry(19.5, 2.4, 8, 48), coronaMat); body.add(corona);
+  const flares = new THREE.Group(); body.add(flares);
+  for (let i = 0; i < 14; i++) { const a = i / 14 * TAU, f = new THREE.Mesh(G.spike, coronaMat); f.position.set(Math.cos(a) * 20, Math.sin(a) * 20, 0); f.rotation.z = a - Math.PI / 2; f.scale.set(4, 6 + (i % 3) * 4, 4); flares.add(f); }
+  const halo = new THREE.Mesh(new THREE.TorusGeometry(27, 0.5, 4, 72), coronaMat); body.add(halo);
+  // two counter-rotating rings of stars shield the eye
+  const rings = [new THREE.Group(), new THREE.Group()]; body.add(...rings);
+  const stars = [];
+  rings.forEach((rg, j) => {
+    const n = 4, R = j ? 44 : 33;
+    for (let i = 0; i < n; i++) {
+      const a = (i + j * 0.5) / n * TAU, mat = new THREE.MeshBasicMaterial({ color: new THREE.Color(2.6, 2.0, 1.2) });
+      const m = new THREE.Mesh(G.crystal, mat); m.scale.setScalar(3.6); m.position.set(Math.cos(a) * R, Math.sin(a) * R, 4); rg.add(m);
+      const spin = new THREE.Mesh(G.ring, coronaMat); spin.scale.setScalar(0.7); m.add(spin);
+      stars.push(addEnemy('star', m, { upd: null, mat, spin, hp: 4 + (st >> 1) }, rg));
+    }
+  });
+  const emat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.5, 0.15, 0.6) });
+  const em = new THREE.Mesh(G.orb, emat); em.scale.set(7, 4, 2); em.position.set(0, 0, 17.5); body.add(em);
+  const pupil = new THREE.Mesh(G.orb, eclipseBlack); pupil.scale.set(0.25, 0.85, 0.5); pupil.position.z = 0.7; em.add(pupil);
+  const eye = addEnemy('eclipse', em, { upd: null, shielded: true, mat: emat, hp: 20 + 2 * st }, body);
+  const shield = new THREE.Mesh(G.orb, Mt.shield); shield.scale.setScalar(11); shield.position.copy(em.position); body.add(shield);
+  const all = [...stars, eye], tl = new V3();
+  S.boss = {
+    g, pos: g.position, age: 0, R: 950, phi: 0, blink: 0, blinkT: 12, fireT: 4, flareT: 7, flareN: 0, flareK: 0, minionT: 9, dead: false, burned: false,
+    maxHp: sumHp(all),
+    hpNow() { return sumHp(all); },
+    isDefeated() { return !eye.alive; },
+    boomAt(out) { body.getWorldPosition(out); out.x += rnd(-30, 30); out.y += rnd(-30, 30); out.z += rnd(-15, 15); return out; },
+    onPartKilled(t) { if (t.kind === 'star') { t.mesh.visible = false; sfx.boom(1.8); } },
+    update(dt) {
+      this.age += dt;
+      const enraged = !eye.shielded;
+      if (enraged && !this.burned) { this.burned = true; coronaMat.color.setRGB(2.6, 1.0, 0.6); popup('THE ECLIPSE BURNS', W / 2, H * 0.36, false, '#ff8a4a'); sfx.warn(); this.blinkT = Math.min(this.blinkT, 1.5); }
+      this.R = lerp(this.R, 210, Math.min(1, dt * 0.35));
+      // it blinks out and reappears a quarter or half turn away: watch the radar
+      if (this.R < 300) this.blinkT -= dt;
+      if (this.blinkT <= 0 && !this.blink) { this.blink = 0.001; sfx.turn(); }
+      let vis = 1;
+      if (this.blink) {
+        this.blink += dt;
+        if (this.blink > 0.5 && !this.jumped) { this.jumped = true; this.phi += [Math.PI / 2, -Math.PI / 2, Math.PI][(Math.random() * (enraged ? 3 : 2)) | 0]; }
+        vis = this.blink < 0.5 ? 1 - smooth(0, 0.5, this.blink) : smooth(0.6, 1.2, this.blink);
+        if (this.blink > 1.2) { this.blink = 0; this.jumped = false; this.blinkT = enraged ? rnd(6, 8) : rnd(9, 11); }
+      }
+      body.scale.setScalar(Math.max(0.01, vis));
+      for (const p of all) p.hidden = vis < 0.8;
+      g.position.set(Math.sin(this.phi) * this.R, 42 + Math.sin(this.age * 0.6) * 8, -Math.cos(this.phi) * this.R);
+      g.lookAt(D.group.getWorldPosition(tmpV));
+      rings[0].rotation.z += dt * (enraged ? 0 : 0.45); rings[1].rotation.z -= dt * (enraged ? 0 : 0.3);
+      flares.rotation.z += dt * 0.15; corona.rotation.z -= dt * 0.4;
+      for (const f of flares.children) f.scale.y = 6 + 4 * (1 + Math.sin(this.age * 3 + f.position.x)) * (enraged ? 1.6 : 1);
+      for (const s of stars) if (s.alive) { s.spin.rotation.x += dt * 3; s.mesh.rotation.z += dt * 1.5; const b = 1 + 0.2 * Math.sin(this.age * 5 + s.mesh.position.x); s.mat.color.setRGB(2.6 * b, 2.0 * b, 1.2 * b); }
+      eye.shielded = stars.some(s => s.alive); shield.visible = eye.shielded;
+      // the eye opens once the stars are gone
+      em.scale.y = lerp(em.scale.y, enraged ? 7 : 1.2, Math.min(1, dt * 2));
+      const pulse = this.flareT < 0.8 && Math.sin(this.age * 40) > 0;
+      if (enraged) emat.color.setRGB(pulse ? 3 : 2.6, pulse ? 3 : 1.0, pulse ? 3 : 2.4); else emat.color.setRGB(0.5, 0.15, 0.6);
+      if (Math.random() < 0.5) { body.localToWorld(tmpV2.set(rnd(-1, 1), rnd(-1, 1), 0).normalize().multiplyScalar(20)); glowP.spawn(tmpV2.x, tmpV2.y, tmpV2.z, rnd(-6, 6), rnd(-6, 6), rnd(-6, 6), coronaMat.color.r, coronaMat.color.g, coronaMat.color.b, 4, 0.6); }
+      if (phase !== 'play' || this.R > 360 || this.blink) return;
+      this.fireT -= dt;
+      if (this.fireT <= 0) {
+        const live = stars.filter(s => s.alive).sort(() => Math.random() - 0.5).slice(0, 3);
+        let fired = 0; for (const s of live) fired += barrage(toLocal(s.mesh, tl), 2, 7, 2.7, 'the Eclipse');
+        this.fireT = fired || !live.length ? (enraged ? 2.4 : 2.8) : 0.4;
+      }
+      // solar flare: a long spiralling stream from the dead sun, to sweep up in one volley
+      this.flareT -= dt;
+      if (this.flareT <= 0.8 && !this.telS && !this.flareN) { this.telS = true; sfx.telegraph(); }
+      if (this.flareT <= 0 && !this.flareN) { this.flareN = (enraged ? 12 : 8) + st; this.flareK = 0; this.telS = false; noise(0.25, 1.4, 400, 2200, undefined, undefined, 'bandpass'); }
+      if (this.flareN) {
+        this.flareK -= dt;
+        if (this.flareK <= 0) { const k = this.flareN * 0.75; shoot(toLocal(enraged ? em : sun, tl), 2.5, 'the Eclipse', new V3(Math.cos(k) * 9, Math.sin(k) * 6, Math.sin(k) * 4)); this.flareN--; this.flareK = 0.13; if (!this.flareN) this.flareT = enraged ? 5.5 : 8; }
+      }
+      this.minionT -= dt;
+      if (this.minionT <= 0) { starlings(enraged ? 8 : 6); this.minionT = enraged ? 8 : 11; }
+    },
+  };
+}
+
 // ---------- damage / effects ----------
-const XPV = { diver: 2, phantom: 2, bomber: 3, linker: 4, sniper: 4, brute: 8, wasp: 1, burrower: 3, crystal: 2, bat: 1, salamander: 4, icegun: 3, gold: 0.5, orb: 0, drone: 1, darter: 1, gunner: 3, bullet: 0.25, weak: 4, core: 4, ccore: 0, aegis: 2, splitter: 2, shard: 0.5, mirror: 3, iheart: 4, ihead: 0, eye: 5, fist: 6, chest: 0, pod: 3, ecore: 6 };
+const XPV = { diver: 2, phantom: 2, bomber: 3, linker: 4, sniper: 4, brute: 8, wasp: 1, burrower: 3, crystal: 2, bat: 1, salamander: 4, kite: 1, conduit: 3, starling: 1, rift: 5, plume: 5, tbheart: 0, star: 5, eclipse: 0, icegun: 3, gold: 0.5, orb: 0, drone: 1, darter: 1, gunner: 3, bullet: 0.25, weak: 4, core: 4, ccore: 0, aegis: 2, splitter: 2, shard: 0.5, mirror: 3, iheart: 4, ihead: 0, eye: 5, fist: 6, chest: 0, pod: 3, ecore: 6 };
 const locksFor = st => FORMS[formName].locks - 2 + st + (S?.lockBonus || 0);
 const PERKS = {
   lock:  { name: '+1 LOCK',            apply() { S.lockBonus++; S.maxL = locksFor(S.stage); } },
@@ -2619,7 +2949,7 @@ function comboKill() {
 }
 function comboBreak() { if (S.combo >= 12) popup(`COMBO ${S.combo} ENDED`, W / 2, H * 0.2, false, '#b5a68d'); S.combo = 0; S.comboT = 0; }
 // ---- bonus objectives: two per stage, paying embers and score ----
-const LAND_KILL = { dusk: ['wasp', 'Sand Wasps', 20], frost: ['crystal', 'Ice Crystals', 12], ember: ['bat', 'Magma Bats', 20] };
+const LAND_KILL = { dusk: ['wasp', 'Sand Wasps', 20], frost: ['crystal', 'Ice Crystals', 12], ember: ['bat', 'Magma Bats', 20], tempest: ['kite', 'Storm Kites', 20], aether: ['starling', 'Starlings', 20] };
 function makeObjectives() {
   const land = LAND_KILL[ST.biome], hue = rh(), pool = [
     { id: 'kind', kind: land[0], text: `Down ${land[2]} ${land[1]}`, goal: land[2] },
@@ -3164,7 +3494,7 @@ function drawHUD(dt) {
   }
   c.textBaseline = 'top';
   // score + progress
-  c.fillStyle = '#b5a68d'; c.font = hudFont(600, 11); c.textAlign = 'left'; c.fillText(S.mode === 'daily' ? 'DAILY' : `STAGE ${S.stageNo + 1}${S.mode === 'story' ? ' / 3' : ''}`, left, top);
+  c.fillStyle = '#b5a68d'; c.font = hudFont(600, 11); c.textAlign = 'left'; c.fillText(S.mode === 'daily' ? 'DAILY' : `STAGE ${S.stageNo + 1}${S.mode === 'story' ? ' / ' + STORY.length : ''}`, left, top);
   c.fillStyle = '#f4e7cf'; c.font = hudFont(700, 24); c.fillText(S.score.toLocaleString(), left, top + 13);
   const bw = Math.min(150, W * 0.3);
   c.fillStyle = 'rgba(244,231,207,.15)'; c.fillRect(left, top + 44, bw, 3);
@@ -3669,7 +3999,7 @@ function renderTab() {
     const endless = LB.rows.filter(r => r.bestEndless).map(r => ({ id: r.id, score: r.bestEndless, stg: r.endlessStage })).sort((a, b) => b.score - a.score).slice(0, 5);
     const rush = LB.rows.filter(r => r.bestRush).map(r => ({ id: r.id, score: r.bestRush, n: r.rushRounds })).sort((a, b) => b.score - a.score).slice(0, 5);
     const spans = [
-      ...boardRows(BP, `Daily flight · ${key} · ${BIOMES[BIOME_ORDER[dayNum() % 3]].name}`, daily, r => `Rank ${r.grade} · ${(FORMS[r.form] || FORMS.sky).name} · ${r.stage}`),
+      ...boardRows(BP, `Daily flight · ${key} · ${BIOMES[BIOME_ORDER[dayNum() % BIOME_ORDER.length]].name}`, daily, r => `Rank ${r.grade} · ${(FORMS[r.form] || FORMS.sky).name} · ${r.stage}`),
       ...boardRows(BP, 'Story · best ever', story, () => 'Best Story score'),
       ...boardRows(BP, 'Endless · best ever', endless, r => `Reached stage ${r.stg || 1}`),
       ...boardRows(BP, 'Boss Rush · best ever', rush, r => `${r.n || 0} boss${r.n === 1 ? '' : 'es'} defeated`),
@@ -3751,6 +4081,7 @@ function frame(now) {
     S.shotTokens = Math.min(6, (S.shotTokens ?? 3) + dt * (1.8 + S.stageNo * 0.4 + (S.boss ? 1.2 : 0)) * DIFF_THREAT[M.diff || 'normal']);
     if (S.comboT > 0) { S.comboT -= dt; if (S.comboT <= 0) comboBreak(); }
     if (S.route === 'storm' && phase === 'play') { S.boltT = (S.boltT ?? 5) - dt; if (S.boltT <= 0) { S.boltT = rnd(5, 10); S.flash = 0.35; sfx.boom(1.3); world.sun.intensity += 1.5; } }
+    else if (ST.biome === 'tempest' && phase === 'play' && !S.event) { S.boltT = (S.boltT ?? 4) - dt; if (S.boltT <= 0) { S.boltT = rnd(6, 12); skyFlash = 0.7; sfx.boom(0.9); } }
     for (const tm of S.timers) if (S.t >= tm.at) { tm.fn(); tm.done = true; }
     S.timers = S.timers.filter(tm => !tm.done);
     placeRig(S.d, dt);
@@ -3851,7 +4182,7 @@ function frame(now) {
   // the sun follows the rig so its shadow box always covers the dragon
   world.sun.target.position.copy(rig.position); world.sun.position.copy(rig.position).addScaledVector(todA, 500);
   world.sun.shadow.normalBias = lerp(3.5, 0.6, smooth(0.04, 0.4, todA.y)); world.sun.shadow.bias = -lerp(0.003, 0.0006, smooth(0.04, 0.4, todA.y));
-  if (ST.B.liquid !== 'ice') { const k = ST.B.liquid === 'lava' ? 0.004 : 0.012; LIQ.normal.offset.x += realDt * k; LIQ.normal.offset.y += realDt * k * 0.6; LIQ.lava.offset.x -= realDt * 0.002; LIQ.lava.offset.y += realDt * 0.0015; }
+  if (ST.B.liquid !== 'ice') { const k = ST.B.liquid === 'lava' || ST.B.liquid === 'void' ? 0.004 : 0.012; LIQ.normal.offset.x += realDt * k; LIQ.normal.offset.y += realDt * k * 0.6; LIQ.lava.offset.x -= realDt * 0.002; LIQ.lava.offset.y += realDt * 0.0015; LIQ.glow.offset.x += realDt * 0.0015; LIQ.glow.offset.y -= realDt * 0.002; }
   world.skyMat.uniforms.uTime.value = (world.skyMat.uniforms.uTime.value + realDt) % 5083; if (gradePass) gradePass.uniforms.uTime.value = (gradePass.uniforms.uTime.value + realDt * 7.3) % 100;
   if (composer) composer.render(); else renderer.render(scene, camera);
   drawHUD(phase === 'title' ? 0 : dt);
