@@ -339,11 +339,11 @@ const TOD_EMBER = [
   { p: 0,    top: [0.25, 0.12, 0.1],  hor: [0.85, 0.4, 0.2],   sun: [1, 0.6, 0.3],      el: 0.2,  li: 1.0,  hs: [0.8, 0.55, 0.45],  hg: [0.5, 0.2, 0.1],   fog: [0.55, 0.28, 0.18], cl: [0.7, 0.45, 0.38] },
   { p: 0.55, top: [0.18, 0.06, 0.06], hor: [0.9, 0.3, 0.12],   sun: [1, 0.45, 0.2],     el: 0.06, li: 0.9,  hs: [0.7, 0.4, 0.35],   hg: [0.5, 0.15, 0.08], fog: [0.5, 0.2, 0.12],   cl: [0.6, 0.35, 0.3] },
   { p: 0.8,  top: [0.1, 0.03, 0.05],  hor: [0.55, 0.15, 0.1],  sun: [0.9, 0.3, 0.15],   el: -0.01, li: 0.65, hs: [0.5, 0.3, 0.3],   hg: [0.4, 0.1, 0.05],  fog: [0.3, 0.1, 0.08],   cl: [0.4, 0.22, 0.2] },
-  { p: 1,    top: [0.05, 0.01, 0.03], hor: [0.3, 0.06, 0.05],  sun: [0.9, 0.35, 0.2],   el: 0.25, li: 0.5,  hs: [0.4, 0.25, 0.25],  hg: [0.35, 0.08, 0.04], fog: [0.16, 0.05, 0.05], cl: [0.3, 0.15, 0.15] },
+  { p: 1,    top: [0.06, 0.015, 0.035], hor: [0.34, 0.08, 0.06], sun: [0.95, 0.4, 0.22], el: 0.25, li: 0.62, hs: [0.5, 0.3, 0.3],  hg: [0.42, 0.1, 0.05], fog: [0.22, 0.07, 0.06], cl: [0.34, 0.17, 0.16] },
 ];
 const TOD_TEMPEST = [
-  { p: 0,    top: [0.28, 0.33, 0.4],  hor: [0.62, 0.64, 0.66], sun: [0.85, 0.88, 0.95], el: 0.35, li: 0.8,  hs: [0.55, 0.6, 0.68],  hg: [0.3, 0.3, 0.32],   fog: [0.52, 0.55, 0.6],  cl: [0.7, 0.72, 0.76] },
-  { p: 0.55, top: [0.18, 0.2, 0.3],   hor: [0.5, 0.45, 0.55],  sun: [0.9, 0.75, 0.7],   el: 0.12, li: 0.72, hs: [0.5, 0.5, 0.62],   hg: [0.26, 0.24, 0.3],  fog: [0.42, 0.4, 0.5],   cl: [0.55, 0.55, 0.65] },
+  { p: 0,    top: [0.16, 0.23, 0.28], hor: [0.82, 0.74, 0.54], sun: [1.0, 0.86, 0.6],   el: 0.12, li: 1.0,  hs: [0.55, 0.62, 0.66], hg: [0.3, 0.32, 0.24],  fog: [0.44, 0.5, 0.48],  cl: [0.5, 0.55, 0.58] },
+  { p: 0.55, top: [0.1, 0.14, 0.2],   hor: [0.74, 0.52, 0.4],  sun: [1.0, 0.66, 0.42],  el: 0.05, li: 0.86, hs: [0.5, 0.52, 0.6],   hg: [0.26, 0.26, 0.24], fog: [0.36, 0.36, 0.4],  cl: [0.42, 0.42, 0.5] },
   { p: 0.8,  top: [0.08, 0.08, 0.16], hor: [0.25, 0.22, 0.35], sun: [0.7, 0.6, 0.9],    el: -0.01, li: 0.58, hs: [0.35, 0.35, 0.5], hg: [0.18, 0.16, 0.22], fog: [0.22, 0.2, 0.3],   cl: [0.4, 0.38, 0.5] },
   { p: 1,    top: [0.03, 0.04, 0.08], hor: [0.1, 0.12, 0.2],   sun: [0.6, 0.7, 1.0],    el: 0.3,  li: 0.48, hs: [0.3, 0.34, 0.5],   hg: [0.12, 0.12, 0.16], fog: [0.09, 0.1, 0.16],  cl: [0.32, 0.34, 0.45] },
 ];
@@ -364,9 +364,9 @@ const BIOMES = {
   ember: { name: 'The Ember Rift', floor: [0.25, 0.2, 0.2], wet: [0.5, 0.15, 0.05], bands: [[0.18, 0.15, 0.16], [0.28, 0.22, 0.22], [0.12, 0.1, 0.11]], top: [0.4, 0.3, 0.28],
            stone: 0x3a3030, spire: 0x2a2224, tod: TOD_EMBER, stars: false, liquid: 'lava', liquidY: -1, worm: { name: 'Magma Worm', color: 0x4a2a20, emissive: 0x6a1a04 }, boss: 'Molten Colossus', music: 'ember', bossMusic: 'fireboss',
            look: { fog: [160, 1900], cover: 0.55, cdark: 0.7, aur: [0, 0, 0, 0], neb: [0, 0, 0, 0], hz: 'volcanoes', shape: 'basalt', cap: [0.3, 0.27, 0.26], detail: 'basalt', glow: [2.4, 0.55, 0.08], lift: [0.035, 0.004, 0], gain: [1.1, 0.95, 0.86], sat: 1.15, con: 1.12 } },
-  tempest: { name: 'The Storm Crown', floor: [0.42, 0.46, 0.4], wet: [0.2, 0.26, 0.28], bands: [[0.32, 0.34, 0.38], [0.42, 0.44, 0.48], [0.26, 0.28, 0.32]], top: [0.52, 0.58, 0.46],
+  tempest: { name: 'The Storm Crown', floor: [0.34, 0.45, 0.26], wet: [0.18, 0.26, 0.26], bands: [[0.3, 0.33, 0.38], [0.4, 0.43, 0.48], [0.24, 0.27, 0.32]], top: [0.38, 0.5, 0.28],
            stone: 0x5a6068, spire: 0x464c56, tod: TOD_TEMPEST, stars: false, liquid: 'water', liquidY: -4, worm: { name: 'Storm Eel', color: 0x4a5a6e, emissive: 0x10204a }, boss: 'Thunderbird', music: 'dusk', bossMusic: 'boss',
-           look: { fog: [220, 2300], cover: 0.92, cdark: 0.85, aur: [0, 0, 0, 0], neb: [0, 0, 0, 0], hz: 'crags', shape: 'crags', cap: [0.33, 0.45, 0.24], detail: 'grass', glow: null, lift: [0, 0.012, 0.02], gain: [0.93, 1.0, 1.03], sat: 0.84, con: 1.1 } },
+           look: { fog: [220, 2300], cover: 0.82, cdark: 0.85, aur: [0, 0, 0, 0], neb: [0, 0, 0, 0], hz: 'crags', shape: 'crags', cap: [0.3, 0.48, 0.2], cap2: [0.44, 0.3, 0.46], detail: 'grass', glow: null, rain: 1, falls: true, lift: [0, 0.012, 0.015], gain: [0.97, 1.0, 0.99], sat: 1.04, con: 1.1 } },
   aether: { name: 'The Shattered Aether', floor: [0.34, 0.27, 0.44], wet: [0.2, 0.12, 0.35], bands: [[0.38, 0.3, 0.5], [0.5, 0.42, 0.62], [0.28, 0.22, 0.4]], top: [0.75, 0.7, 0.9],
            stone: 0x5a4a78, spire: 0x7a6aa8, tod: TOD_AETHER, stars: true, liquid: 'void', liquidY: -3, worm: { name: 'Star Eater', color: 0x2e1e48, emissive: 0x3a1060 }, boss: 'Eclipse', music: 'title', bossMusic: 'fireboss',
            look: { fog: [300, 2800], cover: 0.12, cdark: 0, aur: [1.3, 0.45, 1.7, 0.7], neb: [1.0, 0.35, 1.5, 1], hz: 'spires', shape: 'shards', cap: [0.7, 0.64, 0.92], detail: 'crystal', glow: [1.0, 0.35, 2.0], lift: [0.02, 0, 0.045], gain: [1.03, 0.95, 1.08], sat: 1.15, con: 1.05 } },
@@ -401,9 +401,9 @@ const world = { nearClouds: [], stage: null };
 (function buildSky() {
   const skyMat = new THREE.ShaderMaterial({
     uniforms: { top: { value: new THREE.Color() }, hor: { value: new THREE.Color() }, bot: { value: new THREE.Color(0x2a1a14) }, sunDir: { value: new V3(0.5, 0.3, -0.8).normalize() }, sunCol: { value: new THREE.Color() }, cloudCol: { value: new THREE.Color(1, 1, 1) }, uTime: { value: 0 },
-      cover: { value: 0 }, cdark: { value: 0 }, aur: { value: new THREE.Vector4() }, neb: { value: new THREE.Vector4() } },
+      cover: { value: 0 }, cdark: { value: 0 }, rain: { value: 0 }, aur: { value: new THREE.Vector4() }, neb: { value: new THREE.Vector4() } },
     vertexShader: 'varying vec3 vD; void main(){ vD = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
-    fragmentShader: `uniform vec3 top; uniform vec3 hor; uniform vec3 bot; uniform vec3 sunDir; uniform vec3 sunCol; uniform vec3 cloudCol; uniform float uTime; uniform float cover; uniform float cdark; uniform vec4 aur; uniform vec4 neb; varying vec3 vD;
+    fragmentShader: `uniform vec3 top; uniform vec3 hor; uniform vec3 bot; uniform vec3 sunDir; uniform vec3 sunCol; uniform vec3 cloudCol; uniform float uTime; uniform float cover; uniform float cdark; uniform float rain; uniform vec4 aur; uniform vec4 neb; varying vec3 vD;
       float h21(vec2 p){ p = mod(p, 61.0); vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 19.19); return fract((p3.x + p3.y) * p3.z); }
       float n2(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(h21(i), h21(i + vec2(1.0, 0.0)), f.x), mix(h21(i + vec2(0.0, 1.0)), h21(i + vec2(1.0, 1.0)), f.x), f.y); }
       float fb(vec2 p){ float s = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { s += a * n2(p); p = mod(p * 2.03 + 3.1, 61.0); a *= 0.5; } return s; }
@@ -426,6 +426,10 @@ const world = { nearClouds: [], stage: null };
             float streak = 0.45 + 0.55 * n2(vec2(mod(ang * 183.0 + 61.0, 61.0), h * 2.0 + uTime * 0.04));
             c += aur.rgb * curtain * streak * aur.a * (0.15 + night * 0.85) * (1.0 - cl * 0.8) * 0.5; }
           c = mix(c, cc, cl * (0.6 + cover * 0.32));
+          if (rain > 0.0 && h < 0.24) { float ang = atan(d.z, d.x) / 6.2832;
+            float shaft = smoothstep(0.5, 0.78, n2(vec2(mod(ang * 61.0 + 61.0, 61.0), 1.7))) * (1.0 - smoothstep(0.02, 0.24, h));
+            float streak = n2(vec2(mod(ang * 732.0 + 61.0, 61.0), mod(h * 40.0 + uTime * 1.5, 61.0)));
+            c = mix(c, cloudCol * 0.5, rain * shaft * (0.55 + 0.25 * streak)); }
         }
         c += sunCol * (pow(s, 900.0) * 2.2 * (1.0 - cover * 0.85) + pow(s, 24.0) * 0.28 * (1.0 - cover * 0.6) + pow(s, 3.0) * 0.06);
         vec3 q3 = fract(vec3(mod(gl_FragCoord.xyx, 61.0)) * vec3(0.1031, 0.1030, 0.0973)); q3 += dot(q3, q3.yxz + 19.19);
@@ -476,7 +480,7 @@ function buildHorizon(B, seed) {
     for (let i = 0; i <= N; i++) {
       const a = i / N * TAU, h = hs2[i], x = Math.cos(a) * R, z = Math.sin(a) * R, top = h / maxH;
       pos.push(x, -700, z, x, -140 + h, z);
-      const cap = B.look.hz === 'peaks' && top > 0.55 ? 1.9 : 1, lava = B.look.hz === 'volcanoes' && top > 0.8 ? [4.5, 1.6, 0.5] : null;
+      const cap = B.look.hz === 'peaks' && top > 0.55 ? 1.9 : 1, lava = B.look.hz === 'volcanoes' && top > 0.95 ? [2.6, 1.0, 0.35] : null;
       col.push(1.12, 1.12, 1.12, ...(lava || [0.82 * cap, 0.84 * cap, 0.88 * cap]));
       if (i < N) { const v = i * 2; idx.push(v, v + 1, v + 2, v + 1, v + 3, v + 2); }
     }
@@ -507,7 +511,7 @@ function buildStage(def) {
   const B = BIOMES[def.biome];
   ST = { ...def, B }; TSHAPE = B.look.shape;
   const L = B.look, u = world.skyMat.uniforms;
-  u.cover.value = L.cover; u.cdark.value = L.cdark; u.aur.value.set(...L.aur); u.neb.value.set(...L.neb);
+  u.cover.value = L.cover; u.cdark.value = L.cdark; u.rain.value = L.rain || 0; u.aur.value.set(...L.aur); u.neb.value.set(...L.neb);
   scene.fog.near = L.fog[0]; scene.fog.far = L.fog[1]; applyGrade();
   buildHorizon(B, def.seed); envP = -9;
   NOX = R(0, 900); NOZ = R(0, 900);
@@ -584,7 +588,7 @@ function buildStage(def) {
       col[o] *= f; col[o + 1] *= f; col[o + 2] *= f;
       // flat ground above the floor takes the land's cap: snow, sand, ash, grass or crystal dust
       const flat = smooth(0.8, 0.95, nrm[o + 1]), capK = flat * smooth(10, 22, h) * (0.75 + 0.25 * vnoise(pos[o] * 0.02, pos[o + 2] * 0.02));
-      if (capK > 0) { const cp = B.look.cap, k = capK * (0.95 + 0.1 * ao); for (let c = 0; c < 3; c++) col[o + c] = lerp(col[o + c], cp[c] * ao, k); }
+      if (capK > 0) { const c2 = B.look.cap2, hk = c2 ? smooth(0.55, 0.7, vnoise(pos[o] * 0.006 + 31, pos[o + 2] * 0.006)) : 0, k = capK * (0.95 + 0.1 * ao); for (let c = 0; c < 3; c++) col[o + c] = lerp(col[o + c], lerp(B.look.cap[c], c2 ? c2[c] : 0, hk) * ao, k); }
       // floor patches break up the canyon bed
       if (h < 12 && h > -4) { const pt = smooth(0.45, 0.75, vnoise(pos[o] * 0.012 + 5, pos[o + 2] * 0.012)); const fc = B.look.cap; for (let c = 0; c < 3; c++) col[o + c] = lerp(col[o + c], fc[c] * f, pt * 0.35); }
       if (glow) glow[v] = flat * (1 - smooth(4, 16, h)) * smooth(0.42, 0.68, vnoise(pos[o] * 0.008 + 11, pos[o + 2] * 0.008)) * 1.4;
@@ -635,7 +639,7 @@ function buildStage(def) {
       if (gm) { gm.count = n; g.add(gm); }
     }
   }
-  world.vents = [];
+  world.vents = []; world.mists = [];
   // arches over the flight path, shaped per land
   for (const s of secs) {
     if (!s.arches) continue;
@@ -654,6 +658,12 @@ function buildStage(def) {
     const x = cx + (rng() < 0.5 ? -1 : 1) * R(22, half * 0.95), h = terrainH(x, z); if (h > 10) return null;
     return { x, z, h, check: sc => sc < railAt(railYs, z) - h - 14 || Math.abs(x - cx) > 40 };
   });
+  // grass along the canyon bed
+  if (K.tufts) scatter(K.tufts, 600, 1500, () => {
+    const z = -R(0, -z1 - 400), cx = railAt(railXs, z), x = cx + R(-1, 1) * canyonHalf(z) * 1.1, h = terrainH(x, z);
+    return h < 12 && h > -2 ? { x, z, h } : null;
+  });
+  if (B.look.falls) buildFalls(g, R, rng, z1);
   // open-ground props: anything tall stays clear of the flight path
   scatter(K.open, 230, 1100, it => {
     const z = -R(0, -z1 - 400), cx = railAt(railXs, z), x = cx + (rng() < 0.5 ? -1 : 1) * R(70, 1000), h = terrainH(x, z), dx = Math.abs(x - cx);
@@ -740,8 +750,14 @@ function propKit(B) {
         ...[[0.34, 0.36, 0.42, 0.02], [0.56, 0.27, 0.36, 0.06], [0.76, 0.17, 0.3, 0.1]].map(([y, r, hh, x]) => part(PG.cone(6), green, [x, y, 0], [r * 1.2, hh, r * 0.8], [0, 0, -0.15]))]);
       const stone = merge([part(PG.cyl(0.13, 0.2, 4), grey, [0, 0.5, 0], [1, 1, 0.7], [0, 0.78, 0]), part(PG.cyl(0.2, 0.22, 4), moss, [0, 0.06, 0], [1.05, 0.12, 0.75], [0, 0.78, 0])]);
       const mossRock = merge([part(PG.dod(), grey, [0, 0.35, 0], [1, 0.7, 0.85]), part(PG.dod(), moss, [0, 0.6, 0], [0.8, 0.2, 0.68])]);
+      const ruin = [0.46, 0.47, 0.5];
+      const tower = merge([part(PG.cyl(0.2, 0.25, 8), ruin, [0, 0.4, 0], [1, 0.8, 1]), part(PG.cyl(0.24, 0.22, 8), tint(ruin, 0.85), [0, 0.82, 0], [1, 0.06, 1]),
+        ...[0, 1, 2, 3, 5, 6].map(k => part(PG.box(), ruin, [Math.cos(k * 0.785) * 0.2, 0.9, Math.sin(k * 0.785) * 0.2], [0.09, 0.12 - (k === 6 ? 0.06 : 0), 0.09], [0, -k * 0.785, 0])),
+        part(PG.box(), [0.08, 0.08, 0.1], [0, 0.6, 0.2], [0.04, 0.1, 0.04]), part(PG.box(), [0.08, 0.08, 0.1], [0.2, 0.35, 0], [0.04, 0.1, 0.04]), part(PG.cyl(0.26, 0.27, 8), moss, [0, 0.03, 0], [1, 0.06, 1])]);
+      const tuft = merge([0, 1, 2, 3, 4].map(k => part(PG.cone(4), k % 2 ? [0.3, 0.44, 0.18] : [0.24, 0.36, 0.14], [Math.cos(k * 1.3) * 0.12, 0.5, Math.sin(k * 1.3) * 0.12], [0.06, 1 - k * 0.1, 0.06], [Math.sin(k * 1.3) * 0.35, 0, -Math.cos(k * 1.3) * 0.35])));
       return { arch: 'dolmen', floor: [{ w: 1.3, g: stone, s: [8, 16] }, { w: 1, g: mossRock, s: [4, 10], sink: 0.2 }],
-        open: [{ w: 2.6, g: pine, s: [24, 55], hgt: 1, tilt: 0.04 }, { w: 1, g: stone, s: [30, 70], hgt: 1 }] };
+        open: [{ w: 2.6, g: pine, s: [24, 55], hgt: 1, tilt: 0.04 }, { w: 1, g: stone, s: [30, 70], hgt: 1 }, { w: 0.6, g: tower, s: [26, 48], hgt: 0.95, high: true }],
+        tufts: [{ w: 1, g: tuft, s: [5, 10], tilt: 0.1 }] };
     }
     default: {
       const rock = tint(sp, 0.55), glowC = [1.5, 0.6, 2.4], pale = [0.72, 0.68, 0.84];
@@ -752,6 +768,33 @@ function propKit(B) {
       return { arch: 'gate', floor: [{ w: 1.4, g: cluster, glow: clusterGlow, s: [6, 16] }, { w: 1, g: pillar, s: [10, 22] }],
         open: [{ w: 1.6, g: cluster, glow: clusterGlow, s: [30, 100], hgt: 1, tilt: 0.1 }, { w: 1, g: pillar, s: [40, 90], hgt: 1.1 }] };
     }
+  }
+}
+// waterfalls: ribbons of white water that follow the canyon wall down from a high lip, with mist where they land
+const fallTex = (() => {
+  const W2 = 64, H2 = 256, d = new Uint8Array(W2 * H2 * 4);
+  for (let y = 0; y < H2; y++) for (let x = 0; x < W2; x++) {
+    const streak = pfbm(x / W2 * 12, y / H2 * 2, 12, 3), foam = pfbm(x / W2 * 8, y / H2 * 8, 8, 2), edge = smooth(0, 10, x) * smooth(0, 10, W2 - 1 - x);
+    const o = (y * W2 + x) * 4; d[o] = d[o + 1] = d[o + 2] = 255; d[o + 3] = 255 * clamp((0.12 + 0.88 * smooth(0.4, 0.8, streak) + 0.25 * smooth(0.55, 0.85, foam)) * edge, 0, 1);
+  }
+  const t = new THREE.DataTexture(d, W2, H2, THREE.RGBAFormat); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearMipmapLinearFilter; t.generateMipmaps = true; t.needsUpdate = true; return t;
+})();
+function buildFalls(g, R, rng, z1) {
+  const mat = new THREE.MeshBasicMaterial({ map: fallTex, color: 0xc4d8e2, transparent: true, opacity: 0.8, depthWrite: false, side: THREE.DoubleSide });
+  world.mists = [];
+  for (let n = 0, k = 0; n < 600 && k < 18; n++) {
+    // only where the canyon is narrow enough to fly close past them
+    const z = -R(300, BOSS_D), cx = railAt(railXs, z), side = rng() < 0.5 ? -1 : 1; if (canyonHalf(z) > 170) continue;
+    // walk out from the canyon floor until the wall tops out
+    const prof = []; let x = cx + side * canyonHalf(z) * 0.8, top = -99;
+    for (let j = 0; j < 30; j++) { const h = terrainH(x, z); prof.push([x, h]); if (h > top) top = h; else if (top > 60 && h < top - 2) break; x += side * 8; }
+    if (top < 60) continue;
+    while (prof.length > 2 && prof[prof.length - 1][1] < top - 1) prof.pop();
+    while (prof.length > 3 && prof[1][1] < 4) prof.shift(); // start at the foot of the wall, not out across the floor
+    const w = R(22, 46), pos = [], uv = [], idx = [];
+    prof.forEach(([px, ph], i) => { pos.push(px - side * 1.5, ph + 2.5, z - w / 2, px - side * 1.5, ph + 2.5, z + w / 2); const v = (top - ph) / 60; uv.push(0, v, w / 30, v); if (i) { const b = i * 2; idx.push(b - 2, b - 1, b, b - 1, b + 1, b); } });
+    const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); geo.setIndex(idx);
+    g.add(new THREE.Mesh(geo, mat)); world.mists.push(new V3(prof[0][0], prof[0][1] + 3, z)); k++;
   }
 }
 // arch over the path: half: half-span, top: height of the crown above y = 0 (ground)
@@ -916,6 +959,9 @@ function ambient() {
   if (liq === 'ice') for (let k = 0; k < 2; k++) { tmpV.set(rnd(-110, 110), rnd(-10, 60), -rnd(70, 230)); rig.localToWorld(tmpV); smokeP.spawn(tmpV.x, tmpV.y, tmpV.z, rnd(-3, 3), -rnd(6, 12), rnd(-3, 3), 0.95, 0.97, 1, rnd(0.25, 0.45), 3, { alpha: 0.75 }); }
   if (ST.biome === 'tempest') for (let k = 0; k < 3; k++) { tmpV.set(rnd(-100, 100), rnd(0, 70), -rnd(20, 200)); rig.localToWorld(tmpV); smokeP.spawn(tmpV.x, tmpV.y, tmpV.z, rnd(-4, 4), -rnd(55, 75), rnd(-4, 4), 0.72, 0.78, 0.88, rnd(0.2, 0.35), 1.4, { alpha: 0.55 }); }
   if (liq === 'void' && Math.random() < 0.8) { tmpV.set(rnd(-110, 110), rnd(-40, 30), -rnd(20, 220)); rig.localToWorld(tmpV); glowP.spawn(tmpV.x, tmpV.y, tmpV.z, rnd(-1, 1), rnd(3, 8), rnd(-1, 1), 0.9, 0.45, 1.6, rnd(0.5, 1.0), rnd(2, 3)); }
+  // spray where the waterfalls land
+  if (world.mists?.length && Math.random() < 0.6) { const v = world.mists[(Math.random() * world.mists.length) | 0];
+    if (v.distanceTo(rig.position) < 800) smokeP.spawn(v.x + rnd(-6, 6), v.y, v.z + rnd(-8, 8), rnd(-4, 4), rnd(4, 10), rnd(-4, 4), 0.9, 0.93, 0.95, rnd(10, 18), rnd(2, 3), { grow: 8, alpha: 0.45, drag: 0.4 }); }
   // smoke and sparks rising from the volcanic vents
   if (world.vents?.length && Math.random() < 0.5) { const v = world.vents[(Math.random() * world.vents.length) | 0], d = v.distanceTo(rig.position);
     if (d < 900) { smokeP.spawn(v.x + rnd(-4, 4), v.y, v.z + rnd(-4, 4), rnd(-3, 3), rnd(14, 24), rnd(-3, 3), 0.16, 0.12, 0.11, rnd(16, 26), rnd(3, 4.5), { grow: 10, alpha: 0.55, drag: 0.2 }); glowP.spawn(v.x, v.y, v.z, rnd(-6, 6), rnd(20, 40), rnd(-6, 6), 2.4, 0.7, 0.15, rnd(2, 4), 1.2, { grav: -10 }); } }
@@ -2164,15 +2210,22 @@ function geyser() {
   if (Math.random() < 0.4) sfx.boom(1.2);
 }
 // a lightning bolt: a jagged trail of light from the clouds down to the strike point (world space)
-function bolt(from, to) {
+function bolt(from, to, K = 1) {
   let px = from.x, py = from.y, pz = from.z, ox = 0, oz = 0; const n = 22;
   for (let i = 1; i <= n; i++) {
-    const f = i / n; ox = i < n ? clamp(ox + rnd(-14, 14), -35, 35) : 0; oz = i < n ? clamp(oz + rnd(-14, 14), -35, 35) : 0;
+    const f = i / n; ox = i < n ? clamp(ox + rnd(-14, 14) * K, -35 * K, 35 * K) : 0; oz = i < n ? clamp(oz + rnd(-14, 14) * K, -35 * K, 35 * K) : 0;
     const x = lerp(from.x, to.x, f) + ox, y = lerp(from.y, to.y, f), z = lerp(from.z, to.z, f) + oz;
-    for (let k = 0; k < 7; k++) { const t = k / 7; glowP.spawn(lerp(px, x, t), lerp(py, y, t), lerp(pz, z, t), 0, 0, 0, 1.5, 1.8, 2.6, 6, 0.28); }
-    if (i === 6 || i === 11 || i === 16) { let bx = x, by = y, bz = z; for (let k = 0; k < 14; k++) { bx += rnd(-6, 6); by -= rnd(2, 5); bz += rnd(-6, 6); glowP.spawn(bx, by, bz, 0, 0, 0, 1.0, 1.3, 2.2, 3.5, 0.2); } }
+    for (let k = 0; k < 7; k++) { const t = k / 7; glowP.spawn(lerp(px, x, t), lerp(py, y, t), lerp(pz, z, t), 0, 0, 0, 1.5, 1.8, 2.6, 6 * K, 0.28); }
+    if (i === 6 || i === 11 || i === 16) { let bx = x, by = y, bz = z; for (let k = 0; k < 14; k++) { bx += rnd(-6, 6) * K; by -= rnd(2, 5) * K; bz += rnd(-6, 6) * K; glowP.spawn(bx, by, bz, 0, 0, 0, 1.0, 1.3, 2.2, 3.5 * K, 0.2); } }
     px = x; py = y; pz = z;
   }
+}
+// lightning on the distant hills, somewhere in front of you
+function farBolt() {
+  const a = rnd(-1.1, 1.1), d = rnd(900, 1500);
+  tmpV.set(Math.sin(a) * d, 0, -Math.cos(a) * d); rig.localToWorld(tmpV);
+  const gy = terrainH(tmpV.x, tmpV.z);
+  bolt(new V3(tmpV.x + rnd(-150, 150), gy + 900, tmpV.z), new V3(tmpV.x, gy, tmpV.z), 6);
 }
 // a strike: a crackle marks the spot (rig-local) for a moment, then the bolt lands and throws lockable ball lightning at you
 function strike(src, at) {
@@ -2735,11 +2788,21 @@ const sumHp = list => list.reduce((a, e) => a + (e.alive ? Math.max(0, e.hp) : 0
 
 // ===== Dusk Wastes: the Guardian (ring of cores around a shielded heart) =====
 function spawnGuardian() {
-  const g = new THREE.Group(); rig.add(g);
-  const hullM = new THREE.Mesh(new THREE.DodecahedronGeometry(1, 0), Mt.hull); hullM.scale.set(16, 16, 9); g.add(hullM);
+  const g = new THREE.Group(); rig.add(g); g.scale.setScalar(1.2);
+  // a sun idol of carved sandstone: a stepped disc with a stern face around its heart, bronze rays turning behind it
+  const sand = addRim(new THREE.MeshStandardMaterial({ color: 0xc49468, roughness: 0.85, flatShading: true, map: detailTex('ripples') }));
+  const sandDark = addRim(new THREE.MeshStandardMaterial({ color: 0x6e4a30, roughness: 0.9, flatShading: true }));
+  const glyph = new THREE.MeshBasicMaterial({ color: new THREE.Color(2.2, 1.2, 0.35) });
+  const disc = new THREE.Mesh(new THREE.CylinderGeometry(31, 33, 5, 24), sand); disc.rotation.x = Math.PI / 2; disc.position.z = -2; g.add(disc);
+  for (const [r, t, z] of [[30.5, 1.3, 0.8], [21.5, 1.6, 1], [15, 1.2, 2]]) { const tr = new THREE.Mesh(new THREE.TorusGeometry(r, t, 5, 36), sandDark); tr.position.z = z; g.add(tr); }
+  for (let i = 0; i < 12; i++) { const a = i / 12 * TAU + Math.PI / 12, gl = new THREE.Mesh(new THREE.BoxGeometry(0.9, 3.2, 0.6), glyph); gl.position.set(Math.cos(a) * 18.2, Math.sin(a) * 18.2, 1.6); gl.rotation.z = a; g.add(gl); }
+  const brow = new THREE.Mesh(new THREE.BoxGeometry(19, 2.6, 4), sandDark); brow.position.set(0, 12.2, 3); g.add(brow);
+  for (const sd of [-1, 1]) { const eye = new THREE.Mesh(new THREE.BoxGeometry(5.5, 1.3, 1), glyph); eye.position.set(sd * 5.8, 9.6, 3.6); eye.rotation.z = sd * -0.12; g.add(eye); const ch = new THREE.Mesh(new THREE.BoxGeometry(3, 9, 3), sandDark); ch.position.set(sd * 11, -2, 2.4); ch.rotation.z = sd * 0.15; g.add(ch); }
+  const jaw = new THREE.Mesh(new THREE.BoxGeometry(12, 2.2, 3), sandDark); jaw.position.set(0, -11.5, 2.8); g.add(jaw);
+  for (let i = 0; i < 5; i++) { const a = Math.PI / 2 + (i - 2) * 0.3, cr = new THREE.Mesh(G.spike, sand); cr.position.set(Math.cos(a) * 31, Math.sin(a) * 31, -1); cr.rotation.z = a - Math.PI / 2; cr.scale.set(6, 10 - Math.abs(i - 2) * 2.5, 4); g.add(cr); }
   const ring = new THREE.Mesh(new THREE.TorusGeometry(26, 2, 6, 36), Mt.rim); g.add(ring);
-  const ring2 = new THREE.Mesh(new THREE.TorusGeometry(35, 0.7, 4, 60), Mt.hull2); g.add(ring2);
-  for (let i = 0; i < 8; i++) { const sp = new THREE.Mesh(G.spike, Mt.hull2); const a = i / 8 * TAU; sp.position.set(Math.cos(a) * 35, Math.sin(a) * 35, 0); sp.rotation.z = a - Math.PI / 2; sp.scale.set(4, 6, 4); ring2.add(sp); }
+  const ring2 = new THREE.Mesh(new THREE.TorusGeometry(38, 0.9, 4, 60), Mt.rim); ring2.position.z = -3; g.add(ring2);
+  for (let i = 0; i < 16; i++) { const sp = new THREE.Mesh(G.spike, i % 2 ? Mt.rim : sand); const a = i / 16 * TAU; sp.position.set(Math.cos(a) * 38, Math.sin(a) * 38, 0); sp.rotation.z = a - Math.PI / 2; sp.scale.set(i % 2 ? 2.5 : 4, i % 2 ? 8 : 12, 2.5); ring2.add(sp); }
   const st = S.stageNo, cores = [];
   for (let i = 0; i < 6; i++) {
     const a = i / 6 * TAU + Math.PI / 6, mat = new THREE.MeshBasicMaterial({ color: new THREE.Color(2.2, 1.1, 0.3) });
@@ -2752,7 +2815,7 @@ function spawnGuardian() {
   const center = addEnemy('ccore', cm, { upd: null, shielded: true, mat: cmat, hp: 8 + 2 * st }, g);
   const shield = new THREE.Mesh(G.orb, Mt.shield); shield.scale.setScalar(12); shield.position.set(0, 0, 10); g.add(shield);
   const tent = [];
-  for (let j = 0; j < 6; j++) { const chain = []; for (let k = 0; k < 10; k++) { const m = new THREE.Mesh(G.orb, Mt.hull2); m.scale.setScalar(lerp(2.6, 0.8, k / 9)); g.add(m); chain.push(m); } tent.push(chain); }
+  for (let j = 0; j < 6; j++) { const chain = []; for (let k = 0; k < 10; k++) { const m = new THREE.Mesh(k % 3 === 2 ? G.core : G.orb, k % 3 === 2 ? Mt.rim : sandDark); m.scale.setScalar(lerp(2.6, 0.8, k / 9)); g.add(m); chain.push(m); } tent.push(chain); }
   S.boss = {
     g, pos: g.position, age: 0, R: 950, phi: 0, phiT: 0, moveT: 11, fireT: 4, minionT: 8, spiral: 0, dead: false, killed: 0,
     maxHp: sumHp(cores) + center.hp,
@@ -2796,15 +2859,22 @@ function spawnLeviathan() {
   const st = S.stageNo, NS = 26, segs = [];
   for (let i = 0; i < NS; i++) {
     const r = i === 0 ? 9.5 : lerp(8.5, 2.6, i / (NS - 1));
-    const m = new THREE.Mesh(G.wormSeg, iceArmor); m.scale.set(r, r * 0.82, r * 1.35); g.add(m);
-    const plate = new THREE.Mesh(G.spike, icePlate); plate.position.set(0, 0.75, 0.1); plate.scale.set(0.55, 0.9, 0.4); m.add(plate);
+    const m = new THREE.Mesh(G.wormSeg, iceArmor); m.scale.set(r, r * 0.8, r * 1.85); g.add(m);
+    const plate = new THREE.Mesh(G.crystal, icePlate); plate.position.set(0, 0.8, 0.05); plate.scale.set(0.22, 0.75, 0.3); m.add(plate);
+    if (i % 4 === 2 && i < 22) for (const s of [-1, 1]) { const fin = new THREE.Mesh(G.wingP, icePlate); fin.scale.set(0.42 * s, 0.5, 0.32); fin.position.set(s * 0.6, -0.15, 0); fin.rotation.z = -s * 0.35; m.add(fin); }
+    if (i === NS - 1) for (let k = -1; k <= 1; k++) { const tf = new THREE.Mesh(G.spike, icePlate); tf.position.z = -0.8; tf.rotation.set(-Math.PI / 2, 0, k * 0.5); tf.scale.set(0.8, 3, 0.25); m.add(tf); }
     segs.push({ m, r, plate });
   }
   const head = segs[0].m;
+  head.scale.set(9.5, 7, 12);
+  const snout = new THREE.Mesh(G.wormSeg, iceArmor); snout.scale.set(0.62, 0.45, 0.7); snout.position.set(0, 0.08, 0.72); head.add(snout);
+  const lowJaw = new THREE.Mesh(G.wormSeg, icePlate); lowJaw.scale.set(0.55, 0.22, 0.75); lowJaw.position.set(0, -0.42, 0.6); head.add(lowJaw);
+  const maw = new THREE.Mesh(G.orb, new THREE.MeshBasicMaterial({ color: new THREE.Color(0.5, 1.8, 2.4) })); maw.scale.set(0.42, 0.1, 0.5); maw.position.set(0, -0.25, 0.85); head.add(maw);
   for (const s of [-1, 1]) {
     const horn = new THREE.Mesh(G.spike, icePlate); horn.position.set(s * 0.5, 0.5, -0.3); horn.rotation.set(-1.0, 0, s * 0.4); horn.scale.set(0.35, 1.6, 0.35); head.add(horn);
+    const horn2 = new THREE.Mesh(G.spike, icePlate); horn2.position.set(s * 0.32, 0.6, 0.1); horn2.rotation.set(-0.7, 0, s * 0.25); horn2.scale.set(0.25, 1.1, 0.25); head.add(horn2);
     const jaw = new THREE.Mesh(G.spike, icePlate); jaw.position.set(s * 0.35, -0.35, 0.7); jaw.rotation.set(Math.PI / 2, 0, s * 0.3); jaw.scale.set(0.35, 1.2, 0.35); head.add(jaw);
-    const eye = new THREE.Mesh(G.orb, new THREE.MeshBasicMaterial({ color: new THREE.Color(0.6, 2.2, 2.6) })); eye.scale.setScalar(0.16); eye.position.set(s * 0.55, 0.2, 0.75); head.add(eye);
+    const eye = new THREE.Mesh(G.orb, new THREE.MeshBasicMaterial({ color: new THREE.Color(0.6, 2.2, 2.6) })); eye.scale.set(0.2, 0.13, 0.16); eye.position.set(s * 0.5, 0.22, 0.78); head.add(eye);
   }
   const hearts = [];
   [3, 6, 9, 12, 15, 18, 21, 24].forEach((i, k) => {
@@ -2858,7 +2928,8 @@ function spawnLeviathan() {
 }
 
 // ===== Ember Rift: the Molten Colossus (rises from the lava, slams meteors down on you) =====
-const basalt = addRim(new THREE.MeshStandardMaterial({ color: 0x2a2020, roughness: 0.9, metalness: 0.05, flatShading: true }));
+const basalt = addRim(new THREE.MeshStandardMaterial({ color: 0x2a2020, roughness: 0.9, metalness: 0.05, flatShading: true, emissive: new THREE.Color(2.2, 0.55, 0.08), emissiveMap: (() => { const t = detailTex('cracks').clone(); t.needsUpdate = true; t.repeat.set(2, 2); return t; })() }));
+const obsidian = new THREE.MeshStandardMaterial({ color: 0x0c0a0c, roughness: 0.2, metalness: 0.5, flatShading: true });
 const lavaGlow = new THREE.MeshBasicMaterial({ color: new THREE.Color(2.4, 0.7, 0.12) });
 function spawnColossus() {
   const g = new THREE.Group(); rig.add(g);
@@ -2868,6 +2939,8 @@ function spawnColossus() {
   for (let i = 0; i < 9; i++) { const cr = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), lavaGlow); cr.position.set(rnd(-14, 14), rnd(-18, 18), 15.5); cr.rotation.z = rnd(-1, 1); cr.scale.set(rnd(0.8, 1.6), rnd(8, 16), 1); body.add(cr); }
   const headM = new THREE.Mesh(new THREE.IcosahedronGeometry(1, 0), basalt); headM.scale.set(12, 11, 11); headM.position.set(0, 38, 4); body.add(headM);
   const brow = new THREE.Mesh(new THREE.BoxGeometry(22, 3, 6), basalt); brow.position.set(0, 42, 12); body.add(brow);
+  const mouth = new THREE.Mesh(new THREE.BoxGeometry(10, 1.6, 2), lavaGlow); mouth.position.set(0, 32, 14); body.add(mouth);
+  for (const sd of [-1, 1]) { const horn = new THREE.Mesh(G.spike, obsidian); horn.position.set(sd * 8, 46, 2); horn.rotation.set(-0.3, 0, -sd * 0.5); horn.scale.set(5, 16, 5); body.add(horn); }
   const parts = [];
   const eyes = [-1, 1].map(s => {
     const mat = new THREE.MeshBasicMaterial({ color: new THREE.Color(2.6, 1.0, 0.2) });
@@ -2877,6 +2950,7 @@ function spawnColossus() {
   const arms = [-1, 1].map(s => {
     const shoulder = new THREE.Group(); shoulder.position.set(s * 31, 18, 0); body.add(shoulder);
     const pad = new THREE.Mesh(new THREE.DodecahedronGeometry(1, 0), basalt); pad.scale.setScalar(10); shoulder.add(pad);
+    for (let k = 0; k < 3; k++) { const sp = new THREE.Mesh(G.spike, obsidian); sp.position.set(s * (2 + k * 3), 8, -2 + k * 2); sp.rotation.set(-0.2, 0, -s * (0.3 + k * 0.25)); sp.scale.set(3, 9 - k * 2, 3); shoulder.add(sp); }
     const upper = new THREE.Mesh(new THREE.CylinderGeometry(6, 7, 26, 7), basalt); upper.position.y = -13; shoulder.add(upper);
     const elbow = new THREE.Group(); elbow.position.y = -26; shoulder.add(elbow);
     const fore = new THREE.Mesh(new THREE.CylinderGeometry(5, 6, 22, 7), basalt); fore.position.y = -11; elbow.add(fore);
@@ -4389,7 +4463,7 @@ function frame(now) {
     S.shotTokens = Math.min(6, (S.shotTokens ?? 3) + dt * (1.8 + S.stageNo * 0.4 + (S.boss ? 1.2 : 0)) * DIFF_THREAT[M.diff || 'normal']);
     if (S.comboT > 0) { S.comboT -= dt; if (S.comboT <= 0) comboBreak(); }
     if (S.route === 'storm' && phase === 'play') { S.boltT = (S.boltT ?? 5) - dt; if (S.boltT <= 0) { S.boltT = rnd(5, 10); S.flash = 0.35; sfx.boom(1.3); world.sun.intensity += 1.5; } }
-    else if (ST.biome === 'tempest' && phase === 'play' && !S.event) { S.boltT = (S.boltT ?? 4) - dt; if (S.boltT <= 0) { S.boltT = rnd(6, 12); skyFlash = 0.7; sfx.boom(0.9); } }
+    else if (ST.biome === 'tempest' && phase === 'play' && !S.event) { S.boltT = (S.boltT ?? 4) - dt; if (S.boltT <= 0) { S.boltT = rnd(5, 10); skyFlash = 0.6; sfx.boom(0.9); farBolt(); } }
     for (const tm of S.timers) if (S.t >= tm.at) { tm.fn(); tm.done = true; }
     S.timers = S.timers.filter(tm => !tm.done);
     placeRig(S.d, dt);
@@ -4491,6 +4565,7 @@ function frame(now) {
   world.sun.target.position.copy(rig.position); world.sun.position.copy(rig.position).addScaledVector(todA, 500);
   world.sun.shadow.normalBias = lerp(3.5, 0.6, smooth(0.04, 0.4, todA.y)); world.sun.shadow.bias = -lerp(0.003, 0.0006, smooth(0.04, 0.4, todA.y));
   if (ST.B.liquid !== 'ice') { const k = ST.B.liquid === 'lava' || ST.B.liquid === 'void' ? 0.004 : 0.012; LIQ.normal.offset.x += realDt * k; LIQ.normal.offset.y += realDt * k * 0.6; LIQ.lava.offset.x -= realDt * 0.002; LIQ.lava.offset.y += realDt * 0.0015; LIQ.glow.offset.x += realDt * 0.0015; LIQ.glow.offset.y -= realDt * 0.002; }
+  if (world.mists?.length) fallTex.offset.y = (fallTex.offset.y + realDt * 0.9) % 1;
   world.skyMat.uniforms.uTime.value = (world.skyMat.uniforms.uTime.value + realDt) % 5083; if (gradePass) gradePass.uniforms.uTime.value = (gradePass.uniforms.uTime.value + realDt * 7.3) % 100;
   if (composer) composer.render(); else renderer.render(scene, camera);
   drawHUD(phase === 'title' ? 0 : dt);
