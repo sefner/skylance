@@ -1,5 +1,5 @@
 // Offline cache for Skylance. The version changes whenever the game changes, which retires the old cache.
-const CACHE = 'skylance-7f93e1efd9';
+const CACHE = 'skylance-4ca5712fe6';
 const PRECACHE = [
   "./",
   "index.html",
